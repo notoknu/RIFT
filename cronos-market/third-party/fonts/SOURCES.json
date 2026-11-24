@@ -1,0 +1,22 @@
+[
+  {
+    "family": "inter",
+    "version": "5.3.0",
+    "package": "@fontsource-variable/inter",
+    "source": "https://registry.npmjs.org/@fontsource-variable/inter/-/inter-5.3.0.tgz",
+    "archiveSHA256": "d26710dd38e7217484a1d47ee76c024977ec550548876f26d06ed1844af09a14",
+    "file": "src/assets/fonts/inter-latin.woff2",
+    "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+    "scope": "Latin subset; system fallback for other scripts"
+  },
+  {
+    "family": "space-grotesk",
+    "version": "5.3.0",
+    "package": "@fontsource-variable/space-grotesk",
+    "source": "https://registry.npmjs.org/@fontsource-variable/space-grotesk/-/space-grotesk-5.3.0.tgz",
+    "archiveSHA256": "47d1b51d64ed541b7e74f38e9e682a8ff1bbfd1b68bfd7fff74ac9175058e73c",
+    "file": "src/assets/fonts/space-grotesk-latin.woff2",
+    "sha256": "0640890476fc1198ab4de571fb658de443c4d85b66466ec09534a8737ab1ce9d",
+    "scope": "Latin subset; system fallback for other scripts"
+  }
+]

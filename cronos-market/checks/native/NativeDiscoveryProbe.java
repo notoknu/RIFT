@@ -1,0 +1,11 @@
+package io.rift.cronos;
+import org.json.*;import java.nio.charset.StandardCharsets;import java.util.*;
+/** Optional public read-only contract-page probe. No account access, keys, writes or signing.
+ * Args: public contract address, public owner address. At most 3 recent blocks, one page.
+ * Requires org.json on JVM classpath. Not part of offline regression/Android acceptance. */
+public final class NativeDiscoveryProbe {
+ public static void main(String[] args)throws Exception{if(args.length!=2)throw new IllegalArgumentException("Pass public contract and public owner address");String contract=ReadPolicy.address(args[0]),owner=ReadPolicy.address(args[1]);try(RequestControl control=new RequestControl(60000)){
+  TransferDiscovery.Rpc rpc=new TransferDiscovery.Rpc(){public void requireCronos()throws Exception{if(!"0x19".equals(call("eth_chainId",new JSONArray())))throw new IllegalStateException("Wrong chain");}public Object call(String method,JSONArray params)throws Exception{if(!Arrays.asList("eth_chainId","eth_blockNumber","eth_getBlockByNumber","eth_getLogs").contains(method))throw new IllegalArgumentException();byte[] bytes=new JSONObject().put("jsonrpc","2.0").put("id",1).put("method",method).put("params",params).toString().getBytes(StandardCharsets.UTF_8);PinnedHttps.Result response=PinnedHttps.post("https://evm.cronos.org","",bytes,control);if(response.status!=200)throw new IllegalStateException("Public provider HTTP "+response.status);JSONObject value=new JSONObject(JsonBudget.check(new String(response.body,StandardCharsets.UTF_8),262144,32));if(!"2.0".equals(value.optString("jsonrpc"))||value.optInt("id")!=1||value.has("error")||!value.has("result"))throw new IllegalStateException("Public provider refused read");return value.get("result");}};
+  JSONObject report=TransferDiscovery.scan(rpc,owner,contract,"ERC-721","recent","3");System.out.println(new JSONObject().put("passed",true).put("scope","Public read-only JVM transport + actual provider filters/anchors; NOT Android/device, current holdings or complete history acceptance").put("chainId",25).put("fromBlock",report.getString("fromBlock")).put("toBlock",report.getString("toBlock")).put("logResponses",report.getInt("logResponses")).put("candidateCount",report.getJSONArray("candidates").length()).toString(2));
+ }}
+}

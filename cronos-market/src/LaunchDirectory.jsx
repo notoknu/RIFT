@@ -1,0 +1,8 @@
+import React,{useEffect,useState} from 'react';import CollectionCard from './CollectionCard';import {registryCard} from './registry';
+export default function LaunchDirectory({onOpen,saved,onSave}){
+ const [data,Data]=useState(null),[cursor,Cursor]=useState(null),[busy,Busy]=useState(false),[error,Error]=useState('');
+ const load=async(append=false,signal)=>{Busy(true);try{const r=await fetch('/api/v1/launches'+(append&&cursor?'?cursor='+encodeURIComponent(cursor):''),{signal}),j=await r.json();if(!r.ok)throw new globalThis.Error(j.error||'Registry unavailable');Data(prev=>append?[...(prev||[]),...j.collections.map(registryCard)]:j.collections.map(registryCard));Cursor(j.nextCursor);Error('')}catch(e){if(e.name!=='AbortError')Error(e.message)}finally{if(!signal?.aborted)Busy(false)}};
+ useEffect(()=>{const abort=new AbortController();load(false,abort.signal);return()=>abort.abort()},[]);
+ if(!data?.length)return error?<p className="ranking-note">RIFT launch registry is not currently available. Venue rankings above are separate.</p>:null;
+ return <section className="featured-collections"><div className="discovery-section-head"><div><h2>Launched on RIFT</h2><p>Confirmed factory registrations. No invented volume, floor price or authenticity badge.</p></div></div><div className="collection-grid">{data.map(c=><CollectionCard c={c} key={c.address} onOpen={onOpen} saved={saved.includes(c.address)} onSave={onSave}/>)}</div>{error&&<p className="warning">{error}</p>}{cursor&&<button className="secondary" disabled={busy} onClick={()=>load(true)}>Load more registered launches</button>}</section>
+}

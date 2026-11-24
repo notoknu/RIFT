@@ -1,0 +1,11 @@
+DELETE FROM edge_collection_tokens WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+DELETE FROM edge_collection_holders WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+DELETE FROM edge_collection_logs WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+DELETE FROM edge_collection_metadata WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+DELETE FROM edge_collection_traits WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+DELETE FROM edge_collection_hydration WHERE address IN (SELECT address FROM edge_collection_state WHERE pending IS NOT NULL);
+UPDATE edge_collection_state SET last_block=start_block-1,hash=NULL,pending=NULL,rebuilding=1,lease=NULL,lease_until=NULL WHERE pending IS NOT NULL;
+ALTER TABLE edge_collection_state ADD COLUMN span INTEGER NOT NULL DEFAULT 32;
+CREATE TABLE edge_collection_token_delta(address TEXT,token_key TEXT,supply TEXT,document TEXT,PRIMARY KEY(address,token_key));
+CREATE TABLE edge_collection_holder_delta(address TEXT,owner TEXT,token_key TEXT,quantity TEXT,PRIMARY KEY(address,owner,token_key));
+CREATE TABLE edge_collection_log_delta(address TEXT,block INTEGER,log_index INTEGER,tx TEXT,hash TEXT,document TEXT,PRIMARY KEY(address,block,log_index));

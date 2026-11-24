@@ -1,0 +1,12 @@
+import {venueSnapshotPlugin} from './server/venue-snapshot.js';
+import {collectionProfilePlugin} from './server/collection-profile.js';
+import {statusAPIPlugin} from './server/status-api.js';
+import {collectionAPIPlugin} from './server/collection-api.js';
+import {exchangeAPIPlugin} from './server/exchange-api.js';
+import{creatorAPIPlugin}from'./server/creator-api.js';
+import{ipfsAPIPlugin}from'./server/ipfs-api.js';
+import{marketAPIPlugin}from'./server/market-api.js';
+import{portfolioPlugin}from'./server/portfolio.js';import{walletArtPlugin}from'./server/wallet-assets.js';
+import{metadataAuditPlugin}from'./server/metadata-audit.js';
+import{searchPlugin}from'./server/search.js';
+import{crosscheckPlugin}from'./server/crosscheck.js';import {defineConfig} from 'vite';import{rankingsPlugin}from'./server/rankings.js';import{imagePlugin}from'./server/images.js';export default defineConfig({plugins:[creatorAPIPlugin(),statusAPIPlugin(),venueSnapshotPlugin(),collectionProfilePlugin(),collectionAPIPlugin(),exchangeAPIPlugin(),ipfsAPIPlugin(),marketAPIPlugin(),portfolioPlugin(),walletArtPlugin(),rankingsPlugin(),imagePlugin(),crosscheckPlugin(),searchPlugin(),metadataAuditPlugin()],server:{host:'0.0.0.0',allowedHosts:true}});

@@ -1,0 +1,94 @@
+name: Deploy evaluation (manual approval only)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type DEPLOY EVALUATION (not mainnet activation)'
+        required: true
+        type: string
+      apply_migrations:
+        description: 'Apply pending D1 migrations: only after backup/review, or to a NEW empty DB'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: rift-evaluation-deployment
+  cancel-in-progress: false
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY EVALUATION'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run source:audit
+      - run: npm run test:local-engineering
+      - run: npm run contracts:test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser:implementation
+      - run: npm run test:edge-browser
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: evaluation
+    env:
+      PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      WORKER_NAME: ${{ vars.WORKER_NAME }}
+      SURGE_ORIGIN: ${{ vars.SURGE_ORIGIN }}
+      VITE_WALLETCONNECT_PROJECT_ID: ${{ vars.VITE_WALLETCONNECT_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run build
+      - run: npm run edge:configure
+      - name: Publish static files to Surge (optional)
+        if: env.SURGE_ORIGIN != ''
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+        run: |
+          node -e "require('fs').copyFileSync('dist/index.html','dist/200.html')"
+          npx --yes surge@0.58.0 ./dist "${SURGE_ORIGIN#https://}"
+      - name: Apply reviewed D1 migrations (explicit opt-in)
+        if: inputs.apply_migrations
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4.167.0 d1 migrations apply rift-core --remote --config wrangler.generated.json
+      - name: Deploy disabled-trading Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4.167.0 deploy --config wrangler.generated.json
+      - name: Read-only hosted smoke checks
+        env:
+          CHECK_BASE_URL: ${{ vars.PUBLIC_ORIGIN }}
+        run: npm run check:hosted
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hosted-smoke-result
+          path: checks/hosted-smoke.json
+          if-no-files-found: ignore

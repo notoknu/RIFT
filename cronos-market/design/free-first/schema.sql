@@ -1,0 +1,22 @@
+-- DRAFT ONLY. Repository/auth/indexing code is not implemented by this schema.
+PRAGMA foreign_keys=ON;
+CREATE TABLE collections (address TEXT PRIMARY KEY, chain_id INTEGER NOT NULL DEFAULT 25 CHECK(chain_id=25), name TEXT, creator TEXT, source TEXT NOT NULL, creation_block INTEGER, image_uri TEXT, banner_uri TEXT, coverage TEXT NOT NULL DEFAULT 'partial');
+CREATE TABLE items (collection TEXT NOT NULL REFERENCES collections(address), token_id TEXT NOT NULL, owner TEXT, metadata_uri TEXT, metadata_json TEXT, as_of_block INTEGER, PRIMARY KEY(collection,token_id));
+CREATE INDEX items_owner ON items(owner,collection,token_id);
+CREATE TABLE traits (collection TEXT NOT NULL, token_id TEXT NOT NULL, trait_type TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY(collection,token_id,trait_type,value), FOREIGN KEY(collection,token_id) REFERENCES items(collection,token_id));
+CREATE INDEX traits_filter ON traits(collection,trait_type,value,token_id);
+CREATE TABLE listings (id TEXT PRIMARY KEY, collection TEXT NOT NULL, token_id TEXT NOT NULL, seller TEXT NOT NULL, price_wei TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('active','sold','cancelled')), block_number INTEGER NOT NULL);
+CREATE INDEX listings_seller ON listings(seller,status,id);
+CREATE INDEX listings_collection ON listings(collection,status,id);
+CREATE TABLE chain_events (tx_hash TEXT NOT NULL, log_index INTEGER NOT NULL, block_number INTEGER NOT NULL, block_hash TEXT NOT NULL, contract TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL, PRIMARY KEY(tx_hash,log_index));
+CREATE INDEX events_blocks ON chain_events(block_number);
+CREATE TABLE index_checkpoints (stream TEXT PRIMARY KEY, block_number INTEGER NOT NULL, block_hash TEXT NOT NULL, heartbeat INTEGER NOT NULL);
+CREATE TABLE launch_drafts (id TEXT PRIMARY KEY, creator TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, config_json TEXT NOT NULL, updated_at INTEGER NOT NULL);
+CREATE TABLE launches (address TEXT PRIMARY KEY REFERENCES collections(address), factory TEXT NOT NULL, template_version TEXT NOT NULL, deploy_tx TEXT NOT NULL UNIQUE, storage_mode INTEGER NOT NULL CHECK(storage_mode BETWEEN 0 AND 2));
+CREATE TABLE auth_nonces (nonce_hash TEXT PRIMARY KEY, address TEXT NOT NULL, origin TEXT NOT NULL, expires_at INTEGER NOT NULL, consumed_at INTEGER);
+CREATE TABLE sessions (id_hash TEXT PRIMARY KEY, address TEXT NOT NULL, expires_at INTEGER NOT NULL);
+CREATE TABLE favorites (wallet TEXT NOT NULL, collection TEXT NOT NULL, token_id TEXT NOT NULL, PRIMARY KEY(wallet,collection,token_id));
+CREATE TABLE upload_allocations (id TEXT PRIMARY KEY, wallet TEXT NOT NULL, provider TEXT NOT NULL, reserved_bytes INTEGER NOT NULL CHECK(reserved_bytes>=0), reserved_files INTEGER NOT NULL CHECK(reserved_files>=0), state TEXT NOT NULL, cid TEXT, expires_at INTEGER NOT NULL);
+CREATE TABLE jobs (id TEXT PRIMARY KEY, kind TEXT NOT NULL, cursor TEXT, state TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL);
+CREATE TABLE budget_counters (scope TEXT NOT NULL, period TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope,period));
+CREATE TABLE reports (id TEXT PRIMARY KEY, reporter TEXT NOT NULL, subject TEXT NOT NULL, reason TEXT NOT NULL, created_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'open');

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">RIFT</string>
+    <string name="connections_tools">Advanced settings</string>
+    <string name="no_operation">No operation performed. Credentials are never displayed in results.</string>
+    <string name="receipt_unmetered_only">Background receipt checks: unmetered networks only (default)</string>
+    <string name="preview_notice">RIFT · TEST BUILD · REAL-ASSET WALLET USE NOT APPROVED</string>
+    <string name="backend_connecting">Connecting to Render backend…</string>
+    <string name="backend_retry">Retry backend connection</string>
+    <string name="backend_connected">Backend connected · Cronos 25 · account/trading availability depends on server configuration</string>
+    <string name="backend_unavailable">Service unavailable or disconnected · Retry (free Render services may take time to wake)</string>
+</resources>

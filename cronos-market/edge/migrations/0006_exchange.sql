@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS edge_exchange_state(id INTEGER PRIMARY KEY CHECK(id=1),address TEXT NOT NULL,start_block INTEGER NOT NULL,last_block INTEGER NOT NULL,block_hash TEXT,span INTEGER NOT NULL DEFAULT 128,head INTEGER,updated INTEGER,error TEXT,lease TEXT,lease_until INTEGER,rebuilding INTEGER NOT NULL DEFAULT 0,rebuild_block INTEGER,rebuild_log INTEGER);
+CREATE TABLE IF NOT EXISTS edge_exchange_events(tx TEXT,log_index INTEGER,block INTEGER,block_hash TEXT,type TEXT,id TEXT,kind TEXT,payload TEXT,PRIMARY KEY(tx,log_index));
+CREATE UNIQUE INDEX IF NOT EXISTS edge_exchange_position ON edge_exchange_events(block,log_index);
+CREATE INDEX IF NOT EXISTS edge_exchange_order_event ON edge_exchange_events(type,id,block,log_index);
+CREATE TABLE IF NOT EXISTS edge_exchange_orders(type TEXT,id TEXT,account TEXT,nft TEXT,active INTEGER,expiry INTEGER,document TEXT,PRIMARY KEY(type,id));
+CREATE INDEX IF NOT EXISTS edge_exchange_pages ON edge_exchange_orders(type,active,id);
+CREATE INDEX IF NOT EXISTS edge_exchange_nft ON edge_exchange_orders(nft,type,id);
+CREATE TABLE IF NOT EXISTS edge_exchange_delta(type TEXT,id TEXT,document TEXT,PRIMARY KEY(type,id));
+CREATE TABLE IF NOT EXISTS edge_exchange_pending(id INTEGER PRIMARY KEY CHECK(id=1),kind TEXT,from_block INTEGER,to_block INTEGER,block_hash TEXT,events TEXT,offset INTEGER NOT NULL DEFAULT 0,next_receipt INTEGER);
+CREATE TABLE IF NOT EXISTS edge_exchange_receipts(id INTEGER PRIMARY KEY CHECK(id=1),transactions TEXT,cursor INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS edge_exchange_checkpoints(block INTEGER PRIMARY KEY,hash TEXT);

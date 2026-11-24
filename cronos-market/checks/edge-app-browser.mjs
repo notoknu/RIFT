@@ -1,0 +1,21 @@
+import {Miniflare,convertV4MiniflareOptions} from 'miniflare';import {build} from 'esbuild';import {chromium,expect} from '@playwright/test';import {readFile,readdir,writeFile} from 'node:fs/promises';import {resolve} from 'node:path';import {Wallet} from 'ethers';
+const port=4187,base='http://localhost:'+port;let browser,mf;
+try{
+ const bundle=await build({entryPoints:['edge/worker.js'],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022'});
+ mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:bundle.outputFiles[0].text,compatibilityDate:'2026-11-01',host:'127.0.0.1',port,d1Databases:['DB'],bindings:{PUBLIC_ORIGIN:base},assets:{directory:resolve('dist'),binding:'ASSETS',run_worker_first:true,routerConfig:{has_user_worker:true},assetConfig:{not_found_handling:'single-page-application'}}}));await mf.ready;
+ const db=await mf.getD1Database('DB');for(const f of (await readdir('edge/migrations')).filter(f=>f.endsWith('.sql')).sort())for(const statement of (await readFile('edge/migrations/'+f,'utf8')).split(';').map(v=>v.trim()).filter(Boolean))await db.prepare(statement).run();
+ browser=await chromium.launch({args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:393,height:852}}),errors=[],csp=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/violates.*Content Security Policy|Refused to (?:load|execute|connect)/i.test(m.text()))csp.push(m.text())});
+ // Isolate marketplace provider calls only. Static shell/auth/drafts remain real Worker/D1.
+ await page.route('**/api/collections',r=>r.fulfill({json:{collections:[],counts:{allTime:0,weekly:0},coverage:'Browser test fixture',source:'Isolated fixture'}}));
+ await page.goto(base+'/about');await expect(page.getByRole('heading',{name:'Clear rules. No hidden promises.'})).toBeVisible();
+ const headers=(await page.request.get(base+'/about')).headers();expect(headers['content-security-policy']).toContain("object-src 'none'");
+ const wallet=Wallet.createRandom();const challenge=await page.evaluate(async address=>{const r=await fetch('/api/v1/auth/nonce',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address})});return r.json()},wallet.address);
+ const signature=await wallet.signMessage(challenge.message);const verified=await page.evaluate(async data=>{const r=await fetch('/api/v1/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return r.status},{nonce:challenge.nonce,signature});expect(verified).toBe(200);
+ const cookies=await page.context().cookies();expect(cookies.some(c=>c.name==='rift_session_dev'&&c.httpOnly&&c.sameSite==='Strict')).toBe(true);
+ const saved=await page.evaluate(async()=>{const r=await fetch('/api/v1/launch-drafts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:0,config:{name:'Real browser session fixture'}})});return r.status});expect(saved).toBe(201);
+ await page.reload();await expect(page.getByRole('heading',{name:'Clear rules. No hidden promises.'})).toBeVisible();
+ const afterReload=await page.evaluate(async()=>{const r=await fetch('/api/v1/launch-drafts');return r.status});expect(afterReload).toBe(200);
+ await page.evaluate(()=>fetch('/api/v1/auth/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}));expect(await page.evaluate(async()=>(await fetch('/api/v1/launch-drafts')).status)).toBe(401);
+ for(const width of [360,393,768,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true)}
+ expect(errors).toEqual([]);expect(csp).toEqual([]);await writeFile('checks/edge-app-browser.json',JSON.stringify({passed:true,scope:'Local real workerd/D1 + built frontend in desktop Chromium, mobile viewport sizes; not phone WebView',scenarios:['real assets under CSP','SPA deep link','fresh random-wallet signature','HttpOnly same-origin browser session','draft mutation','reload session continuity','logout invalidates session','360/393/768/1440 widths'],pageErrors:errors,cspErrors:csp,privateKeysSaved:false},null,2)+'\n');console.log('Built frontend + real Worker/D1 browser session passed.');
+}finally{await browser?.close();await mf?.dispose()}

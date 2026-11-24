@@ -1,0 +1,311 @@
+{
+  "keptDeliverables": [
+    "RIFT-ebisu-updated-complete.zip",
+    "RIFT-preview-v4.apk"
+  ],
+  "removed": [
+    {
+      "path": "RIFT-preview-v3.apk",
+      "bytes": 3096882
+    },
+    {
+      "path": "prod-audit.json",
+      "bytes": 1129
+    },
+    {
+      "path": "RIFT-Android-complete.zip",
+      "bytes": 18458584
+    },
+    {
+      "path": "ebisu-catalog.json",
+      "bytes": 79
+    },
+    {
+      "path": "_ssgManifest.js",
+      "bytes": 77
+    },
+    {
+      "path": "RIFT-metadata-fixed-complete.zip",
+      "bytes": 18527838
+    },
+    {
+      "path": "explorer-address.html",
+      "bytes": 84626
+    },
+    {
+      "path": "3264-cd0d958180ce7b91.js",
+      "bytes": 13988
+    },
+    {
+      "path": "live-directory-check.json",
+      "bytes": 121229
+    },
+    {
+      "path": "webpack-35b25cb804c6c659.js",
+      "bytes": 3939
+    },
+    {
+      "path": "main-4acd8d4c030f7d5b.js",
+      "bytes": 129097
+    },
+    {
+      "path": "2555-dcd7a3b0d51c7d69.js",
+      "bytes": 10539
+    },
+    {
+      "path": "explorer.html",
+      "bytes": 379709
+    },
+    {
+      "path": "getjs.sh",
+      "bytes": 1406
+    },
+    {
+      "path": "explorer-_app-e1f12640ae4d5974.js",
+      "bytes": 375680
+    },
+    {
+      "path": "top-collections-table-3f3eac3f7b72a1fa.js",
+      "bytes": 9242
+    },
+    {
+      "path": "RIFT-updated-complete.zip",
+      "bytes": 18499559
+    },
+    {
+      "path": "rift-source-implementation.zip",
+      "bytes": 7894881
+    },
+    {
+      "path": "token-one.json",
+      "bytes": 41
+    },
+    {
+      "path": "ebisu-ranked.json",
+      "bytes": 126903
+    },
+    {
+      "path": "RIFT-preview-v2.apk",
+      "bytes": 3095826
+    },
+    {
+      "path": "query-result.txt",
+      "bytes": 38955
+    },
+    {
+      "path": "minted.html",
+      "bytes": 598101
+    },
+    {
+      "path": "integrate.py",
+      "bytes": 5057
+    },
+    {
+      "path": "crobay-inspect.html",
+      "bytes": 2353
+    },
+    {
+      "path": "ebisu-collections.js",
+      "bytes": 17152
+    },
+    {
+      "path": "RIFT-preview.apk",
+      "bytes": 3098477
+    },
+    {
+      "path": "crosscheck-result.json",
+      "bytes": 48673
+    },
+    {
+      "path": "crovia.html",
+      "bytes": 4545
+    },
+    {
+      "path": "framework-5912f347d2f18e13.js",
+      "bytes": 139888
+    },
+    {
+      "path": "redis-install.log",
+      "bytes": 2401
+    },
+    {
+      "path": "patch2.py",
+      "bytes": 2883
+    },
+    {
+      "path": "table.js",
+      "bytes": 9242
+    },
+    {
+      "path": "patch-rift.py",
+      "bytes": 2068
+    },
+    {
+      "path": "ebisu.js",
+      "bytes": 737706
+    },
+    {
+      "path": "minted-data.json",
+      "bytes": 170624
+    },
+    {
+      "path": "wallet-nfts.json",
+      "bytes": 230
+    },
+    {
+      "path": "nft-endpoint.json",
+      "bytes": 17781
+    },
+    {
+      "path": "token-table.html",
+      "bytes": 17530
+    },
+    {
+      "path": "explorer-%5Baddress%5D-d3bcf3cda8c895a2.js",
+      "bytes": 100525
+    },
+    {
+      "path": "hardhat-old.cjs",
+      "bytes": 463
+    },
+    {
+      "path": "filebin-verified.json",
+      "bytes": 1093
+    },
+    {
+      "path": "filebin-upload-headers.txt",
+      "bytes": 529
+    },
+    {
+      "path": "search-ultra.json",
+      "bytes": 1355
+    },
+    {
+      "path": "get-explorer.sh",
+      "bytes": 361
+    },
+    {
+      "path": "rift-complete-app.zip",
+      "bytes": 12320818
+    },
+    {
+      "path": "RIFT-preview.apk.sha256",
+      "bytes": 83
+    },
+    {
+      "path": "filebin-upload-result.json",
+      "bytes": 979
+    },
+    {
+      "path": "RIFT-preview-apk.zip",
+      "bytes": 3085956
+    },
+    {
+      "path": "ebisu.html",
+      "bytes": 69308
+    },
+    {
+      "path": "6438-4d44541d5521d1ed.js",
+      "bytes": 10555
+    },
+    {
+      "path": "polyfills-42372ed130431b0a.js",
+      "bytes": 112594
+    },
+    {
+      "path": "_buildManifest.js",
+      "bytes": 4264
+    },
+    {
+      "path": "test-image",
+      "bytes": 9591
+    },
+    {
+      "path": "explorer-table.html",
+      "bytes": 44821
+    },
+    {
+      "path": "image-check.png",
+      "bytes": 9591
+    },
+    {
+      "path": "wallet-tokens.json",
+      "bytes": 17781
+    },
+    {
+      "path": "full-ebisu.json",
+      "bytes": 47164
+    },
+    {
+      "path": "collection-provider-sample.json",
+      "bytes": 1354
+    },
+    {
+      "path": "indexer-nfts.json",
+      "bytes": 9
+    },
+    {
+      "path": "make-roadmap.py",
+      "bytes": 8520
+    },
+    {
+      "path": "_app-a19f14869f14e31d.js",
+      "bytes": 2441325
+    },
+    {
+      "path": ".npm/_cacache",
+      "bytes": 1374552408
+    },
+    {
+      "path": ".npm/_logs",
+      "bytes": 30850
+    },
+    {
+      "path": ".cache/android-tools/jdk.tar.gz",
+      "bytes": 193630735
+    },
+    {
+      "path": ".cache/android-tools/gradle.zip",
+      "bytes": 136114148
+    },
+    {
+      "path": ".cache/android-tools/cmdline.zip",
+      "bytes": 164760899
+    },
+    {
+      "path": "cronos-market/checks/backup-test.sqlite-shm",
+      "bytes": 32768
+    },
+    {
+      "path": "cronos-market/checks/backup-test.sqlite",
+      "bytes": 24576
+    },
+    {
+      "path": "cronos-market/checks/backup-test.sqlite-wal",
+      "bytes": 0
+    },
+    {
+      "path": "cronos-market/android/app/build",
+      "bytes": 12479444
+    },
+    {
+      "path": "cronos-market/android/.gradle",
+      "bytes": 503726
+    },
+    {
+      "path": "cronos-market/cache",
+      "bytes": 38056
+    }
+  ],
+  "skipped": [],
+  "logicalBytesRemoved": 1976201569,
+  "preserved": [
+    "Full app source and lockfiles",
+    "Tests, fixtures, audit/check evidence and runbooks",
+    "Runtime data and backups",
+    "Android signing material",
+    "Installed dependencies, frontend build and contract artifacts",
+    "Installed SDK/JDK/Gradle and browser tools"
+  ],
+  "note": "Older workspace download links may no longer resolve. Existing external Filebin uploads are untouched."
+}

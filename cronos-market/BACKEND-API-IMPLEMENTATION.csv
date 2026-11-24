@@ -1,0 +1,45 @@
+Method,Proposed route under /api/v1,Phase,Access,Implementation,Acceptance
+GET,/status,1,Public,Check dependency and index freshness,No secrets; stale != empty
+GET,/collections,2,Public,Search/paginate registered collections,Stable cursor; no fake collections
+GET,/collections/:address,2,Public,Collection identity and branding,Validated contractURI and source
+GET,/collections/:address/items,2,Public,Items with filters and sorting,Indexed cursor; uint256-safe IDs
+GET,/collections/:address/traits,2,Public,Normalized traits/counts,Malformed attributes cannot crash
+GET,/collections/:address/owners,2,Public,Owner aggregates,Coverage and asOfBlock included
+GET,/collections/:address/activity,2,Public,Event activity,Idempotent events; cursor paging
+GET,/items/:address/:tokenId,2,Public,Metadata and verified ownership,Unsupported/unavailable != absent
+GET,/items/:address/:tokenId/activity,2,Public,Token history,Explicit indexed range
+GET,/listings,2,Public,Paginated active RIFT orders,Older active IDs remain visible
+GET,/listings/:id,2,Public,Order by ID,Live state before execution
+GET,/wallets/:address/listings,2,Public,Owner orders,All active listings reachable
+GET,/wallets/:address/proceeds,2,Public,Withdrawal summary,Live balance reconciled
+GET,/wallets/:address/assets,2,Public,Balances and best-effort NFTs,No anonymous genesis scan
+GET,/wallets/:address/coverage,2,Public,Indexed range/freshness,Never claim exhaustive without evidence
+POST,/wallets/:address/imports/verify,2,Public/rate-limited,Verify imported holding,Read-only; no persistent queue side effect
+GET,/rankings,2,Public,Source/time-window ranking,No overlapping volume summation
+GET,/sources,1,Public,Provider scope/status,Timestamp and failure states
+GET,/media/:id,1,Public,Approved cached media,Persistent IDs; bytes/SSRF/content limits
+GET,/items/:address/:tokenId/readiness,2,Public,Metadata compatibility,Readiness is not authenticity
+POST,/auth/nonce,1,Rate-limited,Single-use challenge,Origin/chain/expiry bound
+POST,/auth/verify,1,Signature,Create wallet session,Atomic consume; replay/EIP-1271 tests
+POST,/auth/logout,1,Session,Revoke session,CSRF-safe
+GET,/favorites,2,Session,Read synced favorites,Per-wallet isolation
+PUT,/favorites/:address/:tokenId,2,Session,Save favorite,Idempotent; validated
+DELETE,/favorites/:address/:tokenId,2,Session,Remove favorite,No cross-user changes
+POST,/reports,4,Session,Report collection/item,Anti-spam; no automatic authenticity claim
+PATCH,/collections/:address/presentation,3,Creator session,Update display settings,Verify creator authority; audit trail
+GET,/launches,3,Public,Registered launch directory,Factory receipt-backed only
+GET,/launches/:address,3,Public,Drop config and mint state,Unknown modes handled safely
+POST,/launch-drafts,3,Session,Create creator draft,Size/quota/version controls
+GET,/launch-drafts/:id,3,Owner session,Read draft,No cross-creator access
+PATCH,/launch-drafts/:id,3,Owner session,Save draft,Version conflict handling
+POST,/launches/register,3,Creator session,Verify deployment and register,Factory event and chain verification
+GET,/storage/capabilities,3,Public,Provider quotas and supported paths,No stale permanent-free promises
+POST,/uploads/allocate,3,Session,Reserve sponsored quota,Atomic global quota; capped allowance
+POST,/uploads/:id/sign,3,Owner session,Restricted direct-upload URL,No root JWT; type/size/expiry
+POST,/uploads/:id/finalize,3,Owner session,Verify public pin and metadata,Every expected numbered JSON plus contract.json
+GET,/uploads/:id,3,Owner session,Verification/pinning status,Pending != durable
+POST,/intents/:action,2/3,Session/rate-limited,Unsigned list/buy/cancel/withdraw/mint/deploy,Allowlisted actions; revalidate chain/value/contract
+GET,/transactions/:hash,2,Public,Receipt/confirmation state,Verify chain receipt not client success
+GET,/offers,4,Public,Indexed signed offers,Only after compatible settlement implemented
+POST,/offers,4,Session + typed order,Submit signed offer,Domain/expiry/funding/counters/EIP-1271
+POST,/offers/:id/cancel-intent,4,Maker session,Prepare protocol cancellation,On-chain invalidation verified

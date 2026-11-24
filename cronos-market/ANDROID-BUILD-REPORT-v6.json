@@ -1,0 +1,48 @@
+{
+  "app": "RIFT",
+  "packageId": "io.rift.cronos.preview",
+  "releasePackageIdProvisional": "io.rift.cronos",
+  "version": "0.4.0-hybrid-preview-debug",
+  "minimumAndroid": "8.0 / API 26",
+  "targetSdk": 35,
+  "apk": {
+    "file": "RIFT-hybrid-preview-v6.apk",
+    "bytes": 3441658,
+    "sha256": "669295837a63306cc358398df8c73a76337bfa8a99e2bb3aeb8cc653065ba3bb",
+    "signing": "Disposable Android debug certificate; v2 signature verified",
+    "debuggable": true
+  },
+  "backend": "Offline by default; native Direct-read tools available after explicit mode selection; Hybrid shared HTTPS origin configurable in-app",
+  "verification": {
+    "assembleDebug": "passed",
+    "lintDebug": "passed: 0 errors, 1 warning (JavaScript intentionally required for bundled React UI)",
+    "apksigner": "passed",
+    "androidSourceAndAssetChecks": "3 passing",
+    "equivalentOfflineBrowserSmoke": "passed in Desktop Chromium with mobile viewport; not actual Android WebView",
+    "platformBrowser": "passed with isolated API fixtures and responsive layouts",
+    "collectionMetadataBrowser": "passed with isolated API fixtures; real ULTRA CAT embedded logo and venue banner also loaded in web Chromium",
+    "ebisuWorkflowBrowser": "passed: tabs, scoped statistics, loaded browsing, offer review links, trait deep links and responsive layout",
+    "nativePolicyParser": "51 assertions passed on JVM; not Android runtime",
+    "nativePublicReadProbe": "JVM pinned-TLS read of public Cronos chain ID passed; no keys or transactions",
+    "nativeSettingsStorage": "Compiled/linted only; Keystore, SQLite, Activity and document-provider runtime acceptance not performed",
+    "deviceWorkspaceBrowser": "Passed IndexedDB save/restore with cloud unavailable; namespaces, concurrent saves, limits and malformed restore"
+  },
+  "notPerformed": [
+    "Android emulator or real-device install/runtime testing",
+    "Live HTTPS backend acceptance",
+    "Mobile-wallet pairing/signing/deep-link lifecycle acceptance",
+    "Creator native upload/blob export acceptance",
+    "Production signing or Play Store submission"
+  ],
+  "limitations": [
+    "No backend daemon or chain node inside APK",
+    "Native direct reads are known-asset checks, not full portfolio discovery or web trading",
+    "Native JSON workspace import/export implemented; general WebView uploads/blob exports still unfinished",
+    "No verified mobile wallet callback/App Links or independent direct-trade acceptance",
+    "Native SQLite and browser IndexedDB stores are separate; explicit portable backup interchange, no automatic sync",
+    "API credentials are user-owned native settings; no automatic OAuth/key rotation",
+    "Existing contract review, hosting and device release gates remain"
+  ],
+  "versionCode": 6,
+  "latestUpdate": "Native hybrid settings, user RPC credentials, read-only checks, personal SQLite workspace; browser IndexedDB device drafts"
+}

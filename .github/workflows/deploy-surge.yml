@@ -1,0 +1,55 @@
+name: Deploy RIFT public preview to Surge
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rift-surge-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: cronos-market
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cronos-market/package-lock.json
+      - run: npm ci --include=dev --ignore-scripts
+      - run: npm run build:surge
+        env:
+          VITE_PUBLIC_API_ORIGIN: https://rift-q6qs.onrender.com
+      - name: Install browser for artwork regression gate
+        run: npx playwright install --with-deps chromium
+      - name: Verify candidate artwork against real backend
+        run: node checks/hosted-artwork.mjs
+        env:
+          CHECK_BUILD_DIR: dist
+      - name: Publish to the fixed approved domain
+        env:
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+          SURGE_LOGIN: ${{ vars.SURGE_LOGIN }}
+        run: |
+          test -n "$SURGE_TOKEN" && test -n "$SURGE_LOGIN"
+          set +e
+          npm exec --yes --package=surge@0.58.0 -- surge dist rift.surge.sh > "$RUNNER_TEMP/rift-surge.log" 2>&1
+          result=$?
+          set -e
+          sed -E 's/tok-[[:alnum:]_-]+/[TOKEN-ID-REDACTED]/g' "$RUNNER_TEMP/rift-surge.log"
+          exit "$result"
+      - name: Verify live artwork after publishing
+        run: node checks/hosted-artwork.mjs
+      - name: Preserve artwork verification results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RIFT-artwork-verification
+          retention-days: 7
+          path: |
+            cronos-market/checks/candidate-artwork.json
+            cronos-market/checks/hosted-artwork.json

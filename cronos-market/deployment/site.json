@@ -1,0 +1,11 @@
+{
+  "frontend": "https://rift.surge.sh",
+  "backend": "https://rift-q6qs.onrender.com",
+  "repository": "https://github.com/notoknu/RIFT",
+  "repositoryRoot": "cronos-market",
+  "renderProject": "RIFT",
+  "renderServiceId": "srv-dc2lor4s728c73avrom0",
+  "renderPlan": "free",
+  "autoDeploy": false,
+  "scope": "Public-read-only browsing preview. Creator accounts/uploads disabled; no RIFT trading contract configured. Native wallet remains test-only."
+}

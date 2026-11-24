@@ -1,0 +1,28 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {ExchangeIndex} from '../server/exchange-index.js';import {exchangeInterface,decodeExchangeLog,reduceExchange,orderKey} from '../shared/exchange.js';import {ZeroAddress,ZeroHash} from 'ethers';import {exchangeAPIPlugin} from '../server/exchange-api.js';import express from 'express';
+const market='0x1111111111111111111111111111111111111111',seller='0x2222222222222222222222222222222222222222',buyer='0x3333333333333333333333333333333333333333',nft='0x4444444444444444444444444444444444444444';
+const hash=n=>'0x'+BigInt(n).toString(16).padStart(64,'0');
+function log(name,args,blockNumber,index=0){return {...exchangeInterface.encodeEventLog(exchangeInterface.getEvent(name),args),address:market,blockNumber,index,blockHash:hash(blockNumber),transactionHash:hash(blockNumber*100+index)}}
+const listed=(id=0,block=10)=>log('Listed',[id,seller,nft,7,10,100,0,ZeroAddress,true],block);
+function provider(logs=[]){return {head:32,logs,overrides:new Map(),getNetwork:async()=>({chainId:25n}),async getBlockNumber(){return this.head},async getBlock(n){return {hash:this.overrides.get(n)||hash(n)}},async getLogs({fromBlock,toBlock}){return this.logs.filter(l=>l.blockNumber>=fromBlock&&l.blockNumber<=toBlock)}}}
+const index=()=>new ExchangeIndex({path:':memory:',address:market,startBlock:10});
+test('exchange ABI projections handle fills and reject underflow or mismatched value',()=>{
+ let order=reduceExchange(undefined,decodeExchangeLog(listed()));assert.equal(order.remaining,'10');order=reduceExchange(order,decodeExchangeLog(log('Bought',[0,buyer,3,300],11)));assert.equal(order.remaining,'7');assert.throws(()=>reduceExchange(order,decodeExchangeLog(log('Bought',[0,buyer,8,800],12))),/underflow/);assert.throws(()=>reduceExchange(order,decodeExchangeLog(log('Bought',[0,buyer,1,99],12))),/value/);assert.throws(()=>orderKey(2n**256n),/range/);
+});
+test('indexes quantities, independent offer IDs, refund close and paginated account views',async()=>{
+ const db=index();try{const p=provider([listed(),log('Bought',[0,buyer,3,300],11),log('OfferMade',[0,buyer,nft,0,4,25,2000000000,1,ZeroHash,true],12),log('OfferFilled',[0,seller,9,1,25],13),log('OfferClosed',[0,75],14),listed(1,15)]);await db.sync(p);const page=db.page({limit:1});assert.equal(page.items[0].id,'1');assert.equal(page.nextCursor,'1');assert.equal(db.page({cursor:page.nextCursor}).items[0].remaining,'7');assert.equal(db.page({account:buyer}).items.length,0);assert.equal(db.page({type:'offer'}).items.length,0);assert.equal(db.page({type:'offer',account:buyer,includeClosed:true}).items[0].remaining,'0');const activity=db.activity({nft,limit:2});assert.equal(activity.items.length,2);assert.ok(activity.nextCursor);assert.ok(db.activity({nft,cursor:activity.nextCursor}).items.length>0);const before=db.status();await db.sync(p);assert.deepEqual(db.status(),before)}finally{db.close()}
+});
+test('canonical checkpoint rollback automatically removes orphan fills and replays orders',async()=>{
+ const db=index();try{const p=provider([listed()]);p.head=22;await db.sync(p);p.logs.push(log('Bought',[0,buyer,3,300],13));p.head=27;await db.sync(p);assert.equal(db.page().items[0].remaining,'7');p.overrides.set(15,hash(900));p.logs=[listed(),log('Bought',[0,buyer,2,200],14)];p.head=28;await db.sync(p);assert.equal(db.page().items[0].remaining,'8');assert.equal(db.status().indexedThrough,16)}finally{db.close()}
+});
+test('malformed and duplicate events leave checkpoint and orders unchanged',async()=>{
+ const db=index();try{const p=provider([listed(),listed()]);await assert.rejects(db.sync(p),/Duplicate/);assert.equal(db.status().indexedThrough,9);p.logs=[listed(),log('Bought',[0,buyer,11,1100],11)];await assert.rejects(db.sync(p),/underflow/);assert.equal(db.page().items.length,0);assert.equal(db.status().indexedThrough,9);p.logs=[{...listed(),removed:true}];await assert.rejects(db.sync(p),/Invalid/)}finally{db.close()}
+});
+test('dense single block supports hundreds of logs and uint256 IDs without truncation',async()=>{
+ const db=index();try{const p=provider(Array.from({length:240},(_,i)=>({...listed(i,10),index:i,transactionHash:hash(1000+i)})));p.logs.push({...listed(2n**200n,10),index:240,transactionHash:hash(4000)});await db.sync(p,{span:1});assert.equal(db.page({limit:48}).items.length,48);assert.equal(db.page().items[0].id,(2n**200n).toString());assert.equal(db.db.prepare('SELECT COUNT(*) n FROM exchange_orders').get().n,241);assert.throws(()=>db.page({limit:49}),/Invalid/);assert.throws(()=>db.page({account:'bad'}),/Invalid/)}finally{db.close()}
+});
+test('wrong chain, regressed head and changing checkpoint fail closed',async()=>{
+ const db=index();try{const p=provider([listed()]);p.getNetwork=async()=>({chainId:1n});await assert.rejects(db.sync(p),/Wrong/);p.getNetwork=async()=>({chainId:25n});let count=0;p.getBlock=async n=>({hash:hash(n+(count++?1:0))});await assert.rejects(db.sync(p),/changed/);assert.equal(db.status().indexedThrough,9)}finally{db.close()}
+});
+test('exchange API never enables an unconfigured release and rejects writes',async()=>{
+ const app=express();exchangeAPIPlugin({env:{}}).configureServer({middlewares:app});const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));try{const base='http://127.0.0.1:'+server.address().port+'/api/v1/exchange';let r=await fetch(base+'/capabilities');const config=await r.json();assert.equal(config.tradingEnabled,false);assert.equal(config.configured,false);r=await fetch(base+'/listings');assert.equal(r.status,503);r=await fetch(base+'/capabilities',{method:'POST'});assert.equal(r.status,405)}finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
+});

@@ -1,0 +1,20 @@
+// Explicit local hints, never proof of ownership or exhaustive wallet discovery.
+export const CANDIDATE_LIMIT=200,CANDIDATE_IMPORT_BYTES=128*1024;
+const address=v=>{if(typeof v!=='string'||!/^0x[a-f0-9]{40}$/i.test(v))throw Error('Invalid candidate contract');return v.toLowerCase()};
+export function candidateProfile(v){if(typeof v!=='string'||!/^25:(device|0x[a-f0-9]{40})$/.test(v))throw Error('Invalid candidate profile');return v}
+export function validateCandidate(v){
+ if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['contract','standard','tokenId','label'].includes(k)))throw Error('Unsupported candidate fields');
+ const contract=address(v.contract),standard=v.standard;if(!['ERC-20','ERC-721','ERC-1155'].includes(standard))throw Error('Invalid candidate standard');
+ if(typeof v.label!=='string'||v.label.length>80||/[\u0000-\u001f\u007f]/.test(v.label))throw Error('Candidate label must be plain text up to 80 characters');
+ let tokenId='';if(standard!=='ERC-20'){if(typeof v.tokenId!=='string'||!/^\d{1,78}$/.test(v.tokenId)||BigInt(v.tokenId)>=2n**256n)throw Error('Invalid candidate uint256 token ID');tokenId=BigInt(v.tokenId).toString()}else if(v.tokenId!==undefined&&v.tokenId!=='')throw Error('ERC-20 candidates have no token ID');
+ return {contract,standard,tokenId,label:v.label.trim()};
+}
+export const candidateKey=v=>`${v.standard}:${v.contract}:${v.tokenId}`;
+export function mergeCandidates(existing,incoming){const rows=new Map();for(const v of [...existing,...incoming]){const clean=validateCandidate(v);rows.set(candidateKey(clean),clean)}if(rows.size>CANDIDATE_LIMIT)throw Error('200 candidate maximum per profile; remove unused entries');return [...rows.values()]}
+export function parseCandidateImport(text,profile){candidateProfile(profile);if(typeof text!=='string'||new TextEncoder().encode(text).length>CANDIDATE_IMPORT_BYTES)throw Error('Candidate import exceeds 128 KiB');let v;try{v=JSON.parse(text)}catch{throw Error('Invalid candidate JSON')}if(!v||v.format!=='rift-asset-candidates'||v.schema!==1||v.chainId!==25||v.profile!==profile||!Array.isArray(v.candidates)||v.candidates.length>CANDIDATE_LIMIT)throw Error('Candidate format/chain/profile/limit mismatch');if(Object.keys(v).some(k=>!['format','schema','chainId','profile','candidates'].includes(k)))throw Error('Unsupported candidate backup fields');return mergeCandidates([],v.candidates)}
+export function candidateBackup(profile,rows){return {format:'rift-asset-candidates',schema:1,chainId:25,profile:candidateProfile(profile),candidates:mergeCandidates([],rows)}}
+const request=req=>new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(Error('Candidate database operation failed'))});
+export function candidateStore({indexedDB=globalThis.indexedDB}={}){
+ async function perform(profile,update){candidateProfile(profile);if(!indexedDB)throw Error('Local candidate storage unavailable');const req=indexedDB.open('rift-asset-candidates',1);req.onupgradeneeded=()=>req.result.createObjectStore('profiles',{keyPath:'profile'});const db=await request(req);try{const tx=db.transaction('profiles',update?'readwrite':'readonly'),done=new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(Error('Candidate transaction failed; import not retained'))});try{const store=tx.objectStore('profiles'),old=await request(store.get(profile));let rows=mergeCandidates([],old?.candidates||[]);if(update){rows=update(rows);if(rows.length){if(!old&&(await request(store.count()))>=64)throw Error('64 candidate profiles maximum');store.put({profile,candidates:rows})}else store.delete(profile)}await done;return rows}catch(e){try{tx.abort()}catch{}await done.catch(()=>{});throw e}}finally{db.close()}}
+ return {list:p=>perform(p),merge:(p,rows)=>{const clean=mergeCandidates([],rows);return perform(p,old=>mergeCandidates(old,clean))},remove:(p,key)=>perform(p,rows=>rows.filter(v=>candidateKey(v)!==key)),clear:p=>perform(p,()=>[])};
+}

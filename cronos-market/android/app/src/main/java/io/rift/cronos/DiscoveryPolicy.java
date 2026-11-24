@@ -1,0 +1,19 @@
+package io.rift.cronos;
+import java.math.BigInteger;import java.util.*;
+/** Bounded candidate extraction, never a current-balance reconstruction. */
+public final class DiscoveryPolicy {
+ public static final int MAX_BLOCKS=2000,MAX_LOGS=512,MAX_CANDIDATES=200;
+ public static final String TRANSFER="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",SINGLE="0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",BATCH="0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb";
+ private DiscoveryPolicy(){}
+ public static long block(String value){if(value==null||!value.matches("(?:0|[1-9][0-9]{0,15})"))throw new IllegalArgumentException("Invalid starting block");long n=Long.parseLong(value);if(n>9007199254740991L)throw new IllegalArgumentException("Block exceeds safe range");return n;}
+ public static int span(String value){if(value==null||!value.matches("[1-9][0-9]{0,3}"))throw new IllegalArgumentException("Invalid scan span");int n=Integer.parseInt(value);if(n>MAX_BLOCKS)throw new IllegalArgumentException("At most 2000 blocks per scan");return n;}
+ public static String ownerTopic(String address){return "0x000000000000000000000000"+ReadPolicy.address(address).substring(2);}
+ private static String topicAddress(String value){if(value==null||!value.matches("0x000000000000000000000000[0-9a-fA-F]{40}"))throw new IllegalArgumentException("Noncanonical address topic");return "0x"+value.substring(26).toLowerCase(Locale.ROOT);}
+ private static BigInteger word(String hex,int index){return new BigInteger(hex.substring(index*64,(index+1)*64),16);}
+ public static List<String> tokens(String standard,String owner,boolean incoming,List<String> topics,String data){ReadPolicy.standard(standard);owner=ReadPolicy.address(owner);if(topics==null||topics.isEmpty()||data==null||data.length()>16642||(data.length()-2)%64!=0||!data.matches("0x[0-9a-fA-F]*"))throw new IllegalArgumentException("Malformed event encoding");List<String> result=new ArrayList<>();String sig=topics.get(0).toLowerCase(Locale.ROOT),payload=data.substring(2);if(standard.equals("ERC-721")){
+   if(!sig.equals(TRANSFER)||topics.size()!=3&&topics.size()!=4)throw new IllegalArgumentException("Unexpected transfer event");String from=topicAddress(topics.get(1)),to=topicAddress(topics.get(2));if(!(incoming?to:from).equals(owner))throw new IllegalArgumentException("Event outside selected owner filter");if(topics.size()==3){if(payload.length()!=64)throw new IllegalArgumentException("Malformed fungible Transfer");return result;}if(!payload.isEmpty()||!topics.get(3).matches("0x[0-9a-fA-F]{64}"))throw new IllegalArgumentException("Malformed NFT Transfer");result.add(new BigInteger(topics.get(3).substring(2),16).toString());return result;
+  }
+  if(topics.size()!=4||!sig.equals(SINGLE)&&!sig.equals(BATCH))throw new IllegalArgumentException("Unexpected multi-token event");topicAddress(topics.get(1));String from=topicAddress(topics.get(2)),to=topicAddress(topics.get(3));if(!(incoming?to:from).equals(owner))throw new IllegalArgumentException("Event outside selected owner filter");if(sig.equals(SINGLE)){if(payload.length()!=128)throw new IllegalArgumentException("Malformed TransferSingle");if(word(payload,1).signum()>0)result.add(word(payload,0).toString());return result;}
+  if(payload.length()<256||payload.length()>256+128*128||!word(payload,0).equals(BigInteger.valueOf(64)))throw new IllegalArgumentException("Malformed TransferBatch");BigInteger length=word(payload,2);if(length.bitLength()>8||length.intValue()>128)throw new IllegalArgumentException("Batch token limit exceeded");int n=length.intValue();if(payload.length()!=256+128*n||!word(payload,1).equals(BigInteger.valueOf(96L+32L*n))||!word(payload,3+n).equals(length))throw new IllegalArgumentException("Noncanonical/mismatched batch arrays");for(int i=0;i<n;i++)if(word(payload,4+n+i).signum()>0)result.add(word(payload,3+i).toString());return result;
+ }
+}

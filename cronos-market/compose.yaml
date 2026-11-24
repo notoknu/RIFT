@@ -1,0 +1,184 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_WALLETCONNECT_PROJECT_ID: ${VITE_WALLETCONNECT_PROJECT_ID:-}
+        VITE_DROP_FACTORY_ADDRESS: ${VITE_DROP_FACTORY_ADDRESS:-}
+        VITE_MARKETPLACE_ADDRESS: ${VITE_MARKETPLACE_ADDRESS:-}
+    environment:
+      NODE_ENV: production
+      PORT: 4173
+      CRONOS_RPC_URL: ${CRONOS_RPC_URL:-https://evm.cronos.org}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
+      CREATOR_DB: /app/data/creator.sqlite
+      DROP_FACTORY_ADDRESS: ${DROP_FACTORY_ADDRESS:-}
+      DROP_FACTORY_RUNTIME_HASH: ${DROP_FACTORY_RUNTIME_HASH:-}
+      PINATA_JWT: ${PINATA_JWT:-}
+      PIN_SPONSORED_BYTES: ${PIN_SPONSORED_BYTES:-0}
+      PIN_SPONSORED_FILES: ${PIN_SPONSORED_FILES:-0}
+      COLLECTION_INDEXES_JSON: ${COLLECTION_INDEXES_JSON:-[]}
+      COLLECTION_INDEX_DIR: /app/data/collections
+      INDEX_REGISTERED_COLLECTIONS: ${INDEX_REGISTERED_COLLECTIONS:-0}
+      EXCHANGE_ADDRESS: ${EXCHANGE_ADDRESS:-}
+      EXCHANGE_START_BLOCK: ${EXCHANGE_START_BLOCK:-}
+      EXCHANGE_RUNTIME_HASH: ${EXCHANGE_RUNTIME_HASH:-}
+      EXCHANGE_TRADING_ENABLED: ${EXCHANGE_TRADING_ENABLED:-0}
+      EXCHANGE_INDEX_DB: /app/data/exchange.sqlite
+      MARKETPLACE_ADDRESS: ${VITE_MARKETPLACE_ADDRESS:-}
+      MARKET_START_BLOCK: ${MARKET_START_BLOCK:-}
+      MARKET_INDEX_DB: /app/data/market-index.sqlite
+      REDIS_URL: redis://redis:6379
+      TRUSTED_PROXY: uniquelocal
+      INDEXER_ENABLED: "1"
+      INDEX_DB: /app/data/wallet-index.sqlite
+      FRAME_ANCESTORS: ${FRAME_ANCESTORS:-}
+    volumes: [rift-data:/app/data]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 768m
+    networks: [backend, edge]
+  collection-worker:
+    profiles: [collection-ingestion]
+    build: .
+    command: [node, server/collection-worker.js]
+    environment:
+      COLLECTION_INDEXES_JSON: ${COLLECTION_INDEXES_JSON:-[]}
+      COLLECTION_INDEX_DIR: /app/data/collections
+      INDEX_REGISTERED_COLLECTIONS: ${INDEX_REGISTERED_COLLECTIONS:-0}
+      CREATOR_DB: /app/data/creator.sqlite
+      CRONOS_RPC_URL: ${CRONOS_RPC_URL:-https://evm.cronos.org}
+    volumes: [rift-data:/app/data]
+    depends_on: [app]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 512m
+    networks: [backend, edge]
+  exchange-worker:
+    profiles: [exchange-v2]
+    build: .
+    command: [node, server/exchange-worker.js]
+    environment:
+      EXCHANGE_ADDRESS: ${EXCHANGE_ADDRESS:-}
+      EXCHANGE_START_BLOCK: ${EXCHANGE_START_BLOCK:-}
+      EXCHANGE_INDEX_DB: /app/data/exchange.sqlite
+      CRONOS_RPC_URL: ${CRONOS_RPC_URL:-https://evm.cronos.org}
+    volumes: [rift-data:/app/data]
+    depends_on: [app]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 512m
+    networks: [backend, edge]
+  market-worker:
+    profiles: [trading]
+    build: .
+    command: [node, server/market-worker.js]
+    environment:
+      MARKETPLACE_ADDRESS: ${VITE_MARKETPLACE_ADDRESS:-}
+      MARKET_START_BLOCK: ${MARKET_START_BLOCK:-}
+      MARKET_INDEX_DB: /app/data/market-index.sqlite
+      CRONOS_RPC_URL: ${CRONOS_RPC_URL:-https://evm.cronos.org}
+    volumes: [rift-data:/app/data]
+    depends_on: [app]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 512m
+    networks: [backend, edge]
+  market-backups:
+    profiles: [trading]
+    build: .
+    command: [node, scripts/backup-scheduler.js]
+    environment:
+      INDEX_DB: /app/data/market-index.sqlite
+      BACKUP_DIR: /app/backups/market
+      BACKUP_INTERVAL_HOURS: 24
+      BACKUP_RETENTION_COUNT: 7
+    volumes: [rift-data:/app/data:ro, index-backups:/app/backups]
+    depends_on: [market-worker]
+    restart: unless-stopped
+    networks: [backend]
+  worker:
+    build: .
+    command: [node, server/index-worker.js]
+    environment:
+      INDEX_DB: /app/data/wallet-index.sqlite
+      CRONOS_RPC_URL: ${CRONOS_RPC_URL:-https://evm.cronos.org}
+      INDEX_BLOCK_SPAN: 1000
+    volumes: [rift-data:/app/data]
+    depends_on: [app]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 512m
+    networks: [backend, edge]
+    healthcheck:
+      disable: true
+  backups:
+    build: .
+    command: [node, scripts/backup-scheduler.js]
+    environment:
+      INDEX_DB: /app/data/wallet-index.sqlite
+      BACKUP_DIR: /app/backups
+      BACKUP_INTERVAL_HOURS: 24
+      BACKUP_RETENTION_COUNT: 7
+    volumes: [rift-data:/app/data:ro, index-backups:/app/backups]
+    depends_on: [worker]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    networks: [backend]
+    healthcheck:
+      disable: true
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, "yes", --maxmemory, 128mb, --maxmemory-policy, noeviction]
+    volumes: [redis-data:/data]
+    restart: unless-stopped
+    networks: [backend]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    mem_limit: 192m
+  caddy:
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set your public HTTPS domain}
+    volumes:
+      - ./ops/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [app]
+    restart: unless-stopped
+    networks: [edge]
+volumes:
+  rift-data:
+  index-backups:
+  redis-data:
+  caddy-data:
+  caddy-config:
+networks:
+  backend:
+    internal: true
+  edge:

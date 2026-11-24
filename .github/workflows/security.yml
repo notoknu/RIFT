@@ -1,0 +1,45 @@
+name: Security and regression gates
+on: [push, pull_request, workflow_dispatch]
+defaults:
+  run:
+    working-directory: cronos-market
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 3s --health-retries 5
+    env:
+      TEST_REDIS_URL: redis://127.0.0.1:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cronos-market/package-lock.json
+      - run: npm ci
+      - run: npm run source:audit
+      - run: npm audit --audit-level=low
+      - run: npm run test:local-engineering
+      - run: npm run test:implementation
+      - run: npm run test:security
+      - run: npm run contracts:test
+      - run: npm run contracts:export
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser:implementation
+      - run: npm run test:edge-browser
+      - run: npm run test:split-creator

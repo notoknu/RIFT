@@ -1,0 +1,7 @@
+import React,{useState,useEffect} from 'react';import {formatEther} from 'ethers';
+export default function CollectionActivity({address}){
+ const [page,Page]=useState(null),[items,Items]=useState([]),[error,ErrorText]=useState(''),[busy,Busy]=useState(false);
+ async function load(cursor,signal){Busy(true);try{const r=await fetch('/api/v1/exchange/activity?'+new URLSearchParams({nft:address,...(cursor?{cursor}:{})}),{signal}),j=await r.json();if(!r.ok)throw Error(j.error||'Activity unavailable');Page(j);Items(old=>cursor?[...old,...j.items]:j.items);ErrorText('')}catch(e){if(e.name!=='AbortError')ErrorText(e.message)}finally{if(!signal?.aborted)Busy(false)}}
+ useEffect(()=>{const abort=new AbortController();Page(null);Items([]);load(null,abort.signal);return()=>abort.abort()},[address]);
+ return <details className="collection-activity"><summary>RIFT v2 activity</summary><p>Only this exchange’s confirmed indexed activity—not whole-network transfers or other marketplace sales.</p>{error&&<p>{error}</p>}{items.map(i=><div className="transaction-record" key={i.transactionHash+':'+i.logIndex}><b>{i.kind}</b><span>Order #{i.id} · Block {i.block}</span>{i.gross&&<span>{formatEther(i.gross)} CRO gross</span>}<a href={'https://explorer.cronos.org/tx/'+i.transactionHash} target="_blank" rel="noreferrer">Transaction ↗</a></div>)}{page&&!items.length&&<p>No activity in the indexed coverage.</p>}{busy&&<p>Loading activity…</p>}{page?.nextCursor&&<button className="secondary" disabled={busy} onClick={()=>load(page.nextCursor)}>Older activity</button>}</details>
+}

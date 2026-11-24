@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS creator_profiles (
+ wallet TEXT PRIMARY KEY,
+ version INTEGER NOT NULL DEFAULT 1,
+ document TEXT NOT NULL,
+ updated INTEGER NOT NULL
+);

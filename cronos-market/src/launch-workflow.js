@@ -1,0 +1,23 @@
+// Evidence is scoped to the current configuration. No operator assertions imply verification.
+export const PIN_PROVIDERS=[
+ {id:'pinata',name:'Pinata',url:'https://pinata.cloud/',note:'Creator account required. Check current free quotas and retention; RIFT sponsored uploads are separate.'},
+ {id:'filebase',name:'Filebase',url:'https://filebase.com/',note:'Account and current plan required. Review IPFS pinning limits before uploading.'},
+ {id:'own',name:'Own IPFS node',url:'https://docs.ipfs.tech/how-to/pin-files/',note:'You maintain online providers, off-device backups and replication. A local CID is not a permanent public pin.'}
+];
+export function launchWorkflow({mode,config,svg='',deployment=null,ipfsCheck=null}){
+ const ipfs=Number(mode)===2,supply=Number(config.supply),limits=[supply,Number(config.walletLimit),Number(config.txLimit)];
+ const identity=typeof config.name==='string'&&config.name.trim().length>0&&config.name.length<=64&&/^[\x20-\x7e]+$/.test(config.name)&&typeof config.symbol==='string'&&/^[\x20-\x7e]{1,12}$/.test(config.symbol);
+ const economics=limits.every(Number.isInteger)&&supply>0&&supply<=100000&&limits[1]>0&&limits[1]<=supply&&limits[2]>0&&limits[2]<=limits[1]&&/^\d+(\.\d{1,18})?$/.test(String(config.price))&&Number.isFinite(Number(config.royalty))&&Number(config.royalty)>=0&&Number(config.royalty)<=10;
+ const rows=[
+ {id:'identity',title:'Collection identity',state:identity?'prepared':'action',detail:'Name and symbol only; branding, artwork rights and external-platform verification are separate.'},
+ {id:'art',title:ipfs?'Artwork and metadata directories':'On-chain artwork',state:ipfs?'action':Number(mode)===1?(svg?'prepared':'action'):'prepared',detail:ipfs?'Generate or import numbered art, pin images, export metadata with traits, then pin metadata including contract.json.':Number(mode)===1?'Shared SVG editions: validate the selected SVG before deployment. Token IDs differ; artwork repeats.':'Built-in deterministic renderer: palette variants are not guaranteed unique art. Layer-generated exports use the IPFS path.'},
+ {id:'economics',title:'Mint economics and limits',state:economics?'prepared':'action',detail:'Zero price means free mint plus network gas. Royalties are signals, not guaranteed marketplace enforcement.'},
+ {id:'storage',title:ipfs?'Public metadata retrieval':'Storage compatibility',state:ipfs&&ipfsCheck?.directory===config.content?.trim()&&!ipfsCheck.nextStart?'partial':'action',detail:ipfs?'A completed JSON probe is partial evidence only: image bytes, independent pin replication and recovery remain unverified.':'Metadata and SVG are returned by the contract. Some external indexers cannot decode data URIs. Check compatibility before deployment.'},
+ {id:'deploy',title:'Simulate, review and deploy',state:deployment?.transactionHash?'recorded':'action',detail:deployment?.transactionHash?'A local deployment record exists. Configuration may have changed; verify the address and receipt, not just this checklist.':'Use the gas review below. Wallet approval is required. This checklist never broadcasts transactions.'},
+ {id:'verify',title:'Exact source verification',state:'external',detail:'Export the original verification ZIP after deployment. Submit exact compiler/settings to a supported verifier; an export or submission is not verified status.'},
+ {id:'publish',title:'Mint page and first mint proof',state:'action',detail:'Load the deployed compatible contract below, copy its mint link, and verify a real receipt and tokenURI. No automatic first mint or spending.'},
+ {id:'market',title:'Marketplace discovery and listing',state:'external',detail:'Indexing, collection presentation, listing approvals and platform verification are distinct. Revalidate venue support; no automatic listings or blanket approvals.'},
+ {id:'recovery',title:'Operate, export and recover',state:'action',detail:'Back up art, metadata, proofs, exact source and deployment records. Test restore, monitor pin availability and disclose mutable/admin controls.'}
+ ];return {version:1,chainId:25,path:ipfs?'ipfs':'on-chain',freeMint:Number(config.price)===0,rows,productionReady:false};
+}
+export function workflowExport(input){const w=launchWorkflow(input);return {...w,createdAt:new Date().toISOString(),collection:{name:input.config.name,symbol:input.config.symbol,supply:input.config.supply,mintPriceCRO:input.config.price},deployment:input.deployment?{address:input.deployment.address||null,transactionHash:input.deployment.transactionHash||null}:null,notice:'Planning snapshot only. No private keys, provider credentials or authentication tokens. Prepared is not deployed or externally verified.'};}

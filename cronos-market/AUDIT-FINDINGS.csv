@@ -1,0 +1,20 @@
+ID,Severity,Evidence confidence,Finding,Priority,Owner area,Acceptance target
+A-01,High,Confirmed local-chain reproduction,Latest-100 listing scan hides active escrow,P0,Trading / backend,All active listings and owner cancellations reachable beyond 100 IDs
+A-02,High,Confirmed local-chain reproduction,Unsolicited NFT safe transfer stranded in escrow,P0,Contracts,Review and test restricted receiving and safe unintended-transfer policy
+A-03,Medium,Confirmed production-browser reproduction,Malformed traits empty app root,P0,Frontend / API,Normalize inbound metadata and contain panel failures
+A-04,Medium,Confirmed production-browser reproduction,Unexpected drop mode empties app root,P0,Launch / frontend,Validate contract outputs and contain unsupported-contract failures
+A-05,High,Static architecture and code evidence,Per-wallet genesis scans and anonymous queue admission,P0,Indexer / backend,Demonstrate bounded job admission and reusable indexing under realistic capacity
+A-06,Medium,Static code evidence,Candidate pagination and index freshness gaps,P1,Indexer / API,"DB cursors, accurate ownership paging, current lag/heartbeat"
+A-07,High,Static resource risk; no exhaustion attack run,Metadata caches lack complete aggregate byte limits,P0,Backend,Bound retained memory for every untrusted cache and stress-test safely
+A-08,Medium,Static code evidence and live source timing,RPC/source failover inconsistent,P1,Backend / data,"Consistent provider configuration, schema/byte limits and failure drills"
+A-09,Medium,Static architecture limitation,Artwork registry and SQLite not multi-replica ready,P1,Backend / operations,Shared media registry or explicit validated single-host release
+A-10,Medium,Confirmed code behavior,Public listing read unnecessarily requires wallet,P1,Trading / frontend,Browse orders without provider or wallet consent
+A-11,Medium,Confirmed production-browser reproduction,Favorites disappear on refresh,P1,Frontend,Validated versioned persistence and account behavior
+A-12,Medium,Confirmed static rendering branch,Spotlight checkmark unconditional,P0,Frontend / trust,Unified source-specific conditional verification component
+A-13,Medium,Confirmed incomplete code integration,Collection branding not consumed end-to-end,P1,Launch / collection data,"Registration, contractURI ingestion and consistent collection identity"
+A-14,Medium,Static integration risk; live testing absent,WalletConnect restoration/device edges unproven,P1,Wallet integration,Real device/session/cancel/account/network acceptance matrix
+A-15,Medium,Confirmed workflow limitations,Transaction lifecycle not resumable,P1,Trading / frontend,"Persist steps/hashes and cover partial success, rejection and replacement"
+A-16,Medium,Confirmed monitoring scope; outages not exercised,Health and recovery probes incomplete,P1,Operations / backend,Dependency/worker/backup telemetry and production recovery drills
+A-17,Medium,Confirmed production-browser reproduction,Tablet overflow and inaccessible wallet dialog,P1,Frontend / accessibility,"Responsive tablet layouts, dialog focus/role/Escape and keyboard tests"
+A-18,Low,Confirmed expression semantics,Invalid/future preflight timestamp accepted by freshness comparison,P1,Deployment tooling,Strict finite timestamp/schema and stale/future report tests
+A-19,Low,Static code/build/test evidence,"Performance, maintainability and CI browser gaps",P2,Engineering / frontend,"Performance budgets, modular formatting and production browser regressions"
