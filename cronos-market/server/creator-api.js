@@ -1,12 +1,13 @@
 import {creatorRoute} from '../shared/creator-routes.js';
-import {isAbsolute} from 'node:path';
+import {accountStorageConfig} from './account-storage-config.js';
+import {remoteD1} from './remote-d1.js';
 import express from 'express';
 import {localD1} from './local-d1.js';
 import {createCreatorService} from '../shared/creator-service.js';
 import {pinataProvider} from '../shared/pinata-provider.js';
 import {creatorChain} from './creator-chain.js';
 export function creatorAPIPlugin({env=process.env}={}){
- let service;
+ let service,initializing;
  return {name:'creator-account-api',configureServer(server){
   const router=express.Router();
   const raw=express.raw({type:()=>true,limit:'2300kb'});
@@ -16,9 +17,16 @@ export function creatorAPIPlugin({env=process.env}={}){
    const path=(req.originalUrl||req.url).split('?')[0];
    if(!creatorRoute(path,req.method).owned)return next();
    if(!env.PUBLIC_ORIGIN)return res.status(503).json({error:'Creator backend disabled. Configure exact PUBLIC_ORIGIN; public browsing is unaffected.'});
-   if(env.NODE_ENV==='production'&&(env.CREATOR_STORAGE_PERSISTENT!=='1'||!isAbsolute(env.CREATOR_DB||'')))return res.status(503).json({error:'Account storage is not ready. Configure and verify a persistent creator database volume before enabling accounts.'});
+   if(env.NODE_ENV==='production'&&!accountStorageConfig(env).configured)return res.status(503).json({error:'Account storage is not ready. Configure and verify persistent SQLite storage or remote account storage before enabling accounts.'});
    try{
-    if(!service)service=createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db:localD1(env.CREATOR_DB||'data/creator.sqlite'),origin:env.PUBLIC_ORIGIN,chain:creatorChain(env),uploadProvider:pinataProvider(env.PINATA_JWT),uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0),logger:(event,e)=>console.error(event,e.name||'Error')});
+    if(!service){
+     if(!initializing)initializing=(async()=>{
+      const driver=env.CREATOR_DB_DRIVER||'sqlite';if(!['sqlite','libsql'].includes(driver))throw Error('Unsupported account storage driver');
+      const db=driver==='libsql'?await remoteD1(env):localD1(env.CREATOR_DB||'data/creator.sqlite');
+      try{return createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db,origin:env.PUBLIC_ORIGIN,chain:creatorChain(env),uploadProvider:pinataProvider(env.PINATA_JWT),uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0),logger:(event,e)=>console.error(event,e.name||'Error')})}catch(e){db.close();throw e}
+     })().catch(e=>{initializing=null;throw e});
+     service=await initializing;
+    }
     const method=req.method,headers=new Headers();for(const [k,v]of Object.entries(req.headers))if(v!==undefined)headers.set(k,Array.isArray(v)?v.join(','):v);
     const body=['GET','HEAD'].includes(method)?undefined:(req.body?.length?new Uint8Array(req.body):undefined);
     const request=new Request(new URL(req.originalUrl||req.url,env.PUBLIC_ORIGIN),{method,headers,body});

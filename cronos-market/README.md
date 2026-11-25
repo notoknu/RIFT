@@ -1,3 +1,15 @@
+# RIFT — Cronos NFT application
+
+**Release status: public preview, not approved for funded-wallet or mainnet-trading production use.**
+
+Start with [FEATURE-MATRIX.md](FEATURE-MATRIX.md), [RELEASE-V21.md](RELEASE-V21.md), and [LOCAL-PRETEST.md](LOCAL-PRETEST.md). The runtime release endpoint `/api/v1/release` reports allowlisted configuration observations and the Render commit when supplied. Its flags are not evidence of an audit, successful transaction, storage durability or Android acceptance.
+
+Source includes discovery, creator tools, profiles, indexers, contracts and Android. Availability differs by deployment. Profile storage, uploads and trading must remain disabled until their individual gates are met. No Discord account or server-side wallet key storage is required.
+
+## Historical engineering records
+
+The notes below describe earlier milestones. They are not the current release contract; numeric test counts apply only to their recorded run.
+
 > **Current: hybrid v8.** Read [HYBRID-V8-IMPLEMENTATION-REPORT.md](HYBRID-V8-IMPLEMENTATION-REPORT.md) and [PACKAGE-START-HERE.md](PACKAGE-START-HERE.md). Native/web personal SQLite integration, encrypted manual backups and stricter transaction/reorg recovery are implemented; 128 engineering + 40 local contract tests passed. Android runtime, remaining native pipelines, production hosting/signing and mainnet acceptance are NOT complete. Older continuation notes below are historical.
 
 > **Latest continuation:** See [ENGINEERING-SESSION-RESULTS.md](ENGINEERING-SESSION-RESULTS.md) for implemented deployment/session/security improvements and actual verification (103 engineering, 40 contract tests). This is not a mainnet launch or a completed five-hour claim. See SECURITY.md before reporting issues and DEPLOY-NEXT.md before deploying.

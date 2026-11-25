@@ -75,6 +75,12 @@ export function createCreatorService({db,origin,chain,uploadProvider,uploadBytes
    }
    if(path==='/api/v1/auth/session'&&method==='GET'){const s=await session(request);return respond({address:s.address,chainId:25,expiresAt:new Date(s.expires).toISOString()})}
    if(path==='/api/v1/auth/logout'&&method==='POST'){const s=await session(request);await query('DELETE FROM creator_sessions WHERE hash=?',s.hash).run();return respond({ok:true},200,bearer?{}:{'Set-Cookie':cookie('',0)})}
+   if(path==='/api/v1/auth/logout-all'&&method==='POST'){
+    const s=await session(request),data=await json(request);
+    if(!data||Object.keys(data).length!==1||data.confirm!=='REVOKE ACTIVE SESSIONS')fail(400,'Explicit session revocation confirmation required');
+    await query('DELETE FROM creator_sessions WHERE address=?',s.address).run();
+    return respond({ok:true,scope:'All currently stored sessions for this wallet revoked. Wallet connections and pending sign-in challenges are not revoked.'},200,bearer?{}:{'Set-Cookie':cookie('',0)});
+   }
    if(path==='/api/v1/storage/capabilities'&&method==='GET'){
     const budget=await query('SELECT * FROM creator_budget WHERE id=1').first();return respond({provider:'Pinata public IPFS',uploadsEnabled:!!uploadProvider&&uploadBytes>0&&uploadFiles>0&&!budget.blocked,byteLimit:uploadBytes,fileLimit:uploadFiles,reservedBytes:budget.bytes,reservedFiles:budget.files,maxBatchFiles:32,maxBatchBytes:2097152,note:'Optional capped platform account; not per-wallet free storage. Quotas are conservative internal reservations, not provider account billing telemetry. Pin retention, gateway bandwidth and account eligibility remain operator responsibilities.'});
    }
@@ -86,9 +92,13 @@ export function createCreatorService({db,origin,chain,uploadProvider,uploadBytes
     const a=address(publicCollection[1]);if(await query('SELECT address FROM creator_visibility WHERE address=? AND hidden=1',a).first())fail(451,'Collection hidden from RIFT registry after moderation review; on-chain ownership is unchanged');const row=await query('SELECT c.*,p.title AS display_title,p.description AS display_description,p.image_uri AS display_image,p.banner_uri AS display_banner FROM creator_collections c LEFT JOIN creator_presentations p ON p.address=c.address WHERE c.address=?',a).first();if(!row)fail(404,'Collection not registered with RIFT');return respond(row);
    }
    // All remaining supported routes require a session; no financial custody is taken.
-   const known=/^\/api\/v1\/(profile|launch-drafts(?:\/[a-f0-9]{64})?|favorites(?:\/0x[\da-fA-F]{40})?|reports|launches\/register|collections\/0x[\da-fA-F]{40}\/presentation|uploads(?:\/[a-f0-9]{64}(?:\/files)?)?)$/;
+   const known=/^\/api\/v1\/(profile(?:\/export)?|launch-drafts(?:\/[a-f0-9]{64})?|favorites(?:\/0x[\da-fA-F]{40})?|reports|launches\/register|collections\/0x[\da-fA-F]{40}\/presentation|uploads(?:\/[a-f0-9]{64}(?:\/files)?)?)$/;
    if(!known.test(path))return null;
    const s=await session(request);
+   if(path==='/api/v1/profile/export'&&method==='GET'){
+    const row=await query('SELECT version,document,updated FROM creator_profiles WHERE wallet=?',s.address).first();
+    return respond({format:'rift-private-profile',formatVersion:1,exportedAt:new Date(now()).toISOString(),address:s.address,profile:row?{...JSON.parse(row.document),version:row.version,updated:row.updated}:null,scope:'Private profile data only. Not a wallet backup, full account export, or automatic restore package.'});
+   }
    if(path==='/api/v1/profile'){
     if(method==='GET'){const row=await query('SELECT version,document,updated FROM creator_profiles WHERE wallet=?',s.address).first();return respond({address:s.address,profile:row?{...JSON.parse(row.document),version:row.version,updated:row.updated}:null,scope:'Private wallet-authenticated profile; not a public identity or ownership attestation'});}
     if(method==='PUT'){

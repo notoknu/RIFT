@@ -22,7 +22,7 @@
     "test:implementation": "node --test checks/implementation.test.mjs",
     "test:browser:implementation": "node checks/run-implementation-browser.mjs",
     "market:worker": "node server/market-worker.js",
-    "test:local-engineering": "node --test checks/creator-service.test.mjs checks/edge-runtime.test.mjs checks/transactions.test.mjs checks/database-snapshot.test.mjs checks/exchange-index.test.mjs checks/generative-art.test.mjs checks/collection-api.test.mjs checks/creator-ops.test.mjs checks/exchange-client.test.mjs checks/collection-index.test.mjs checks/encrypted-snapshot.test.mjs checks/ops-recovery.test.mjs checks/replacement-recovery.test.mjs checks/edge-exchange.test.mjs checks/edge-public-read.test.mjs checks/d1-recovery.test.mjs checks/edge-collections.test.mjs checks/car-recovery.test.mjs checks/collection-profile.test.mjs checks/venue-snapshot.test.mjs checks/frontend-delivery.test.mjs checks/deployment-preparation.test.mjs checks/edge-frontend-runtime.test.mjs checks/release-tooling.test.mjs checks/device-workspace.test.mjs checks/native-policy.test.mjs checks/file-export.test.mjs checks/personal-workspace.test.mjs checks/workspace-backup-crypto.test.mjs checks/device-reads.test.mjs checks/native-reads.test.mjs checks/native-receipts.test.mjs checks/asset-candidates.test.mjs checks/verification-plan.test.mjs checks/metadata-reference.test.mjs checks/walletconnect-lifecycle.test.mjs checks/media-preview.test.mjs checks/transfer-discovery.test.mjs checks/discovery-index.test.mjs checks/holdings-check.test.mjs checks/online-wallet.test.mjs checks/public-hosting.test.mjs checks/artwork-policy.test.mjs checks/split-creator.test.mjs checks/split-creator-race.test.mjs checks/profile-storage.test.mjs checks/launch-workflow.test.mjs checks/metadata-manifest.test.mjs",
+    "test:local-engineering": "node --test checks/creator-service.test.mjs checks/edge-runtime.test.mjs checks/transactions.test.mjs checks/database-snapshot.test.mjs checks/exchange-index.test.mjs checks/generative-art.test.mjs checks/collection-api.test.mjs checks/creator-ops.test.mjs checks/exchange-client.test.mjs checks/collection-index.test.mjs checks/encrypted-snapshot.test.mjs checks/ops-recovery.test.mjs checks/replacement-recovery.test.mjs checks/edge-exchange.test.mjs checks/edge-public-read.test.mjs checks/d1-recovery.test.mjs checks/edge-collections.test.mjs checks/car-recovery.test.mjs checks/collection-profile.test.mjs checks/venue-snapshot.test.mjs checks/frontend-delivery.test.mjs checks/deployment-preparation.test.mjs checks/edge-frontend-runtime.test.mjs checks/release-tooling.test.mjs checks/device-workspace.test.mjs checks/native-policy.test.mjs checks/file-export.test.mjs checks/personal-workspace.test.mjs checks/workspace-backup-crypto.test.mjs checks/device-reads.test.mjs checks/native-reads.test.mjs checks/native-receipts.test.mjs checks/asset-candidates.test.mjs checks/verification-plan.test.mjs checks/metadata-reference.test.mjs checks/walletconnect-lifecycle.test.mjs checks/media-preview.test.mjs checks/transfer-discovery.test.mjs checks/discovery-index.test.mjs checks/holdings-check.test.mjs checks/online-wallet.test.mjs checks/public-hosting.test.mjs checks/artwork-policy.test.mjs checks/split-creator.test.mjs checks/split-creator-race.test.mjs checks/profile-storage.test.mjs checks/launch-workflow.test.mjs checks/metadata-manifest.test.mjs checks/release-manifest.test.mjs checks/account-storage-probe.test.mjs checks/remote-accounts.test.mjs",
     "database:snapshot": "node scripts/database-snapshot.js",
     "exchange:worker": "node server/exchange-worker.js",
     "creator:ops": "node scripts/creator-ops.js",
@@ -56,12 +56,14 @@
     "test:device-reads": "node --test checks/device-reads.test.mjs checks/native-reads.test.mjs checks/native-receipts.test.mjs checks/asset-candidates.test.mjs checks/metadata-reference.test.mjs checks/media-preview.test.mjs checks/transfer-discovery.test.mjs checks/discovery-index.test.mjs checks/holdings-check.test.mjs",
     "test:device-reads-browser": "node checks/device-reads-browser.mjs",
     "verify:hybrid": "node scripts/verify-hybrid.js",
-    "build:surge": "node deployment/build-surge.mjs"
+    "build:surge": "node deployment/build-surge.mjs",
+    "accounts:storage-check": "node scripts/verify-account-storage.mjs"
   },
   "dependencies": {
     "@ipld/car": "^6.2.0",
     "@ipld/dag-cbor": "^11.0.0",
     "@ipld/dag-pb": "^4.2.0",
+    "@libsql/client": "^0.18.0",
     "@walletconnect/universal-provider": "^2.26.0",
     "ethers": "^6.13.0",
     "express": "^5.3.0",

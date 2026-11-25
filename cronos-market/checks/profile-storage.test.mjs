@@ -2,10 +2,10 @@ import test from 'node:test';import assert from 'node:assert/strict';import {Wal
 import express from 'express';import {creatorAPIPlugin} from '../server/creator-api.js';import {snapshot,restore} from '../scripts/database-snapshot.js';
 import {localD1} from '../server/local-d1.js';import {createCreatorService} from '../shared/creator-service.js';import {profileDocument} from '../shared/profile-document.js';
 const origin='https://rift-q6qs.onrender.com',alice=Wallet.createRandom(),bob=Wallet.createRandom();
-function setup(path=':memory:'){
- const db=localD1(path),svc=createCreatorService({db,origin});
- async function req(route,method='GET',body,cookie){const r=await svc.handle(new Request(origin+'/api/v1'+route,{method,headers:{Origin:origin,...(body!==undefined?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:body===undefined?undefined:JSON.stringify(body)}));return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};}
- async function login(w=alice){const n=await req('/auth/nonce','POST',{address:w.address});return (await req('/auth/verify','POST',{nonce:n.data.nonce,signature:await w.signMessage(n.data.message)})).cookie;}
+function setup(path=':memory:',sessionTransport='cookie'){
+ const db=localD1(path),svc=createCreatorService({db,origin,sessionTransport});
+ async function req(route,method='GET',body,cookie){const r=await svc.handle(new Request(origin+'/api/v1'+route,{method,headers:{Origin:origin,...(body!==undefined?{'Content-Type':'application/json'}:{}),...(cookie?(sessionTransport==='bearer'?{Authorization:'Bearer '+cookie}:{Cookie:cookie}):{})},body:body===undefined?undefined:JSON.stringify(body)}));return {status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};}
+ async function login(w=alice){const n=await req('/auth/nonce','POST',{address:w.address});const verified=await req('/auth/verify','POST',{nonce:n.data.nonce,signature:await w.signMessage(n.data.message)});return sessionTransport==='bearer'?verified.data.sessionToken:verified.cookie;}
  return {db,req,login};
 }
 test('private profiles require wallet session, isolate identities and reject ownership injection',async()=>{
@@ -34,4 +34,13 @@ test('production account routes fail closed without persistent storage configura
 });
 test('SQLite snapshot and restore include profile storage in a fresh destination',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'rift-profile-backup-'));let f;try{const source=join(dir,'source.sqlite'),backup=join(dir,'backup.sqlite'),target=join(dir,'restored.sqlite');f=setup(source);const cookie=await f.login();await f.req('/profile','PUT',{version:0,displayName:'Backup fixture'},cookie);await snapshot(source,backup);f.db.close();f=null;await restore(backup,target,{stopped:true});f=setup(target);assert.equal((await f.req('/profile','GET',undefined,cookie)).data.profile.displayName,'Backup fixture');}finally{f?.db.close();await rm(dir,{recursive:true,force:true});}
+});
+
+for(const transport of ['cookie','bearer'])test('profile export and scoped active-session revocation: '+transport,async()=>{
+ const f=setup(':memory:',transport);try{assert.equal((await f.req('/profile/export')).status,401);assert.equal((await f.req('/auth/logout-all','POST',{confirm:'REVOKE ACTIVE SESSIONS'})).status,401);const a=await f.login(),a2=await f.login(),b=await f.login(bob);
+ await f.req('/profile','PUT',{version:0,displayName:'Export fixture'},a);const report=await f.req('/profile/export','GET',undefined,a);assert.equal(report.status,200);assert.equal(report.data.format,'rift-private-profile');assert.equal(report.data.profile.displayName,'Export fixture');assert.equal(report.data.address,alice.address.toLowerCase());assert.equal((await f.req('/profile/export','GET',undefined,b)).data.profile,null);assert.ok(!JSON.stringify(report.data).includes(a));
+ assert.equal((await f.req('/auth/logout-all','POST',{},a)).status,400);assert.equal((await f.req('/auth/session','GET',undefined,a2)).status,200);assert.equal((await f.req('/auth/logout-all','POST',{confirm:'REVOKE ACTIVE SESSIONS',wallet:bob.address},a)).status,400);
+ const result=await f.req('/auth/logout-all','POST',{confirm:'REVOKE ACTIVE SESSIONS'},a);assert.equal(result.status,200);assert.equal((await f.req('/auth/session','GET',undefined,a)).status,401);assert.equal((await f.req('/auth/session','GET',undefined,a2)).status,401);assert.equal((await f.req('/auth/session','GET',undefined,b)).status,200);
+ const fresh=await f.login();assert.equal((await f.req('/profile','GET',undefined,fresh)).data.profile.displayName,'Export fixture');
+ }finally{f.db.close()}
 });
