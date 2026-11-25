@@ -1,0 +1,19 @@
+{
+  "release": "node-directory-refresh-coordination-1",
+  "androidVersionCodeUnchanged": 27,
+  "androidRebuiltThisBatch": false,
+  "engineeringTestsPassed": 358,
+  "securityTestsPassed": 7,
+  "securityRedisExecuted": true,
+  "implementationChecksPassed": 6,
+  "fullControlledBrowserSuitePassed": true,
+  "frontendBuildPassed": true,
+  "focusedTestsPassed": 18,
+  "newRegressionTests": 15,
+  "contractsRerun": false,
+  "nativeInstrumentationExecuted": 0,
+  "backendDeployed": false,
+  "mainnetTransactions": 0,
+  "productionApproved": false,
+  "scope": "Node directory resource per process plus structural saved-directory validation and atomic JSON persistence. Not all-provider/global/cross-replica coordination. Current tests are local; unchanged v27 APKs retain their original historical evidence."
+}

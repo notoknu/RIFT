@@ -1,0 +1,11 @@
+import React,{useState} from 'react';
+import {creatorRequest,forgetCreatorSession} from './creator-client';
+import {downloadFile} from './file-export';
+export default function AccountPrivacy({requireSession,run,toast,busy,onSessionRevoked}){
+ const [confirmation,Confirm]=useState('');
+ return <details className="account-privacy"><summary>Private workspace · export and deletion</summary><p>Export your backend profile, saved launch drafts and account favorites as one consistent snapshot. Files are plaintext and may contain private creator work. Wallet secrets and local artwork are not included.</p>
+ <button type="button" className="secondary" disabled={busy} onClick={()=>run(async()=>{await requireSession();if(!confirm('Download private profile, drafts and favorites to a plaintext file? Store it securely. This is not a wallet backup.'))return;const report=await creatorRequest('/account/export');await downloadFile(JSON.stringify(report,null,2),'rift-private-workspace.json');toast('Private workspace exported. Artwork, wallet keys and retained service records are excluded.');})}>Export private workspace</button>
+ <h4>Delete stored private workspace</h4><p>Deletes the backend profile, drafts, favorites, stored sign-in challenges and account sessions together. Other wallets are unaffected. Public collection records, upload/provider and moderation records, logs and retained backups remain. Device-local files, wallet keys and on-chain assets are unchanged. Already authorized in-flight requests are not cancelled; stop other activity first.</p>
+ <label>Type DELETE PRIVATE WORKSPACE to confirm<input value={confirmation} autoComplete="off" spellCheck="false" onChange={e=>Confirm(e.target.value)} maxLength={40}/></label>
+ <button type="button" className="secondary" disabled={busy||confirmation!=='DELETE PRIVATE WORKSPACE'} onClick={()=>run(async()=>{await requireSession();if(!confirm('Permanently delete the stored private workspace and sign out? This does not erase retained backups or unpin files.'))return;await creatorRequest('/account/delete-private',{method:'POST',body:{confirm:confirmation}});forgetCreatorSession();Confirm('');onSessionRevoked?.();toast('Stored private workspace deleted and sessions revoked. On-chain assets and retained service records were not changed.');})}>Delete private workspace and sign out</button></details>;
+}

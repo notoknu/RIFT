@@ -1,82 +1,78 @@
 {
   "app": "RIFT",
+  "versionCode": 30,
+  "version": "0.28.0-wallet-pairing-preview-debug",
   "packageId": "io.rift.cronos.preview",
-  "releasePackageIdProvisional": "io.rift.cronos",
-  "versionCode": 18,
-  "version": "0.16.0-hybrid-preview-debug",
-  "minimumAndroid": "8.0 / API 26",
-  "targetSdk": 35,
-  "apk": {
-    "file": "RIFT-hybrid-preview-v18.apk",
-    "bytes": 9624642,
-    "sha256": "f549f3e4c0503bfd88b25dd0bd56c37707a5726c6a8f4a0861f8185ffb2b72d8",
-    "signing": "Disposable Android debug certificate; v2 signature verified",
-    "debuggable": true
-  },
-  "instrumentationApk": {
-    "file": "android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
-    "bytes": 364563,
-    "sha256": "38796faee9a9d441d0350e80b4c67d5e4eb891283fd2b50f3f97c9600b5d4ba0",
-    "signing": "Disposable Android debug certificate; v2 signature verified",
-    "debuggable": true
-  },
-  "backend": "Online-default direct Cronos RPC with persistent explicit disconnect; shared HTTPS API still required for web marketplace features. No platform keys/service automatically provisioned.",
-  "verification": {
-    "engineering": 178,
-    "implementation": 6,
-    "redis": 7,
-    "contracts": 40,
-    "nativeJvmTests": 38,
-    "walletCrypto": "5 JVM crypto tests, public vectors independently matched ethers; NOT Android vault execution",
-    "androidBuildLint": "passed; checks/v18-final-android.log; 0 errors, 10 warnings",
-    "browserSuites": "Implementation + worker/D1 + offline-fallback passed; native bridges mocked",
-    "instrumentation": "15 legacy tests compiled NOT executed; no vault/device-auth runtime acceptance",
-    "appSignature": "v2 debug verified",
-    "freshSourceInstall": "Passed actual npm ci + 178 engineering tests + frontend build + 38 native JVM tests from final separate extracted source; checks/v18-clean-*",
-    "androidDevice": "blocked: no authorized device/emulator",
-    "runner": "checks/v18-verification.json"
-  },
-  "notPerformed": [
-    "Actual Android native SQLite/Keystore/consent/SAF/WebView/runtime execution",
-    "Fifteen instrumentation tests on device/emulator",
-    "Hosted Android workflow/emulator CI execution",
-    "Production hosting/deployment or capacity verification",
-    "Mobile-wallet callbacks/pairing/signing/mainnet spending",
-    "Production signing, Play Store submission or independent audit"
+  "artifacts": [
+    {
+      "file": "RIFT-v30-preview.apk",
+      "bytes": 9575964,
+      "sha256": "a883de382b8b611623cebc28d036083c79b69e80a926e5a5ae9c5b96c8cb51f8",
+      "signerSha256": "599df4a2608b52fe0e85f4edcdf5d236aeb181b97376163d67387ad83dd0e700",
+      "signatureVerified": true
+    },
+    {
+      "file": "RIFT-v30-native-tests.apk",
+      "bytes": 366335,
+      "sha256": "d68acd1939ac1b8d66f5561ae2c4ee9fec55bce48b89aecf1a6976aa22fa5fe5",
+      "signerSha256": "599df4a2608b52fe0e85f4edcdf5d236aeb181b97376163d67387ad83dd0e700",
+      "signatureVerified": true
+    }
   ],
-  "remainingEngineering": [
-    "Wallet-wide holdings discovery, coverage validation and native checkpoint runtime acceptance",
-    "Authenticated encrypted conflict-aware automatic sync",
-    "UnixFS/DAG/path integrity and richer media/cache policies",
-    "Real wallet/deep-link/account/chain/process-death lifecycle integration/acceptance",
-    "Actual Android decoder/networking/storage/background runtime acceptance"
-  ],
-  "limitations": [
-    "Personal namespace is not wallet authentication; granted same-origin pages can read/mutate consented profile",
-    "SQLite/IndexedDB are app-private but not encrypted databases; only optional exported backup is passphrase encrypted",
-    "Started DB mutations may commit after page timeout/close; inspect before retrying",
-    "File provider writes/cleanup are not atomic/guaranteed; selected-URI runtime acceptance required",
-    "No platform secrets, native signing API or continuously running phone backend; test-only native entropy vault is now present",
-    "Existing WebView IndexedDB records are not auto-migrated into native SQLite",
-    "No project LICENSE chosen; source candidate is not publication-approved"
-  ],
-  "currentReport": "HYBRID-V18-IMPLEMENTATION-REPORT.md",
-  "deviceProcedure": "ANDROID-V18-DEVICE-ACCEPTANCE.md",
-  "deviceAcceptance": "blocked: no authorized Android device/emulator",
-  "releaseAccepted": false,
-  "backgroundDataPolicy": "unmetered networks only by default; saved policy changes pause checks until explicit resume",
-  "externalMetadata": "Native-saved public HTTPS gateway: ipfs.io/dweb.link presets + manual origin, no redirects/auth/automatic fallback. Raw CIDv1 SHA-256 only verified; UnixFS paths unverified.",
-  "rasterPreview": {
-    "inputMaxBytes": 131072,
-    "inputMaxPixels": 1048576,
-    "inputMaxSide": 2048,
-    "outputMaxBytes": 65536,
-    "outputMaxSide": 256,
-    "decoderRuntimeAccepted": false
+  "preservedPriorPreviewSigner": true,
+  "engineeringTestsPassed": 384,
+  "androidShellTestsPassed": 3,
+  "frontendBuildPassed": true,
+  "assetHashChecksPassed": 21,
+  "jvm": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
   },
-  "discovery": "Explicit contract-scoped ERC721/ERC1155 transfer-log candidate pages only, max 2000 blocks/512 responses/200 IDs; not current holdings or full wallet discovery",
-  "persistentDiscovery": "Explicit native SQLite contract-scoped start/resume/status/delete; source revisions and anchor checks with CAS; max 16 scopes/1000 IDs/10000 pages/200-entry views. Not wallet-wide/current holdings, automatic work or sync.",
-  "holdingsObservation": "Explicit 1\u201312 known NFT hints; EIP1898 canonical block hash, fixed ABI, final anchor/source checks; no latest fallback/partial success/cache/automatic removal/completeness assertion",
-  "wallet": "Experimental single-account BIP39 native vault, device-auth-required AES-GCM Keystore, receive/backup/recovery only; NO embedded signing/trading; NEVER fund/import funded wallet",
-  "onlineLifecycle": "Default direct RPC on launch/foreground; explicit disconnect persists. Save edits pauses until validated Connect. Reset/removal separate from wallet deletion."
+  "lint": {
+    "Warning": 8
+  },
+  "instrumentationTestsCompiled": 19,
+  "instrumentationTestsExecuted": 0,
+  "deviceStatus": "blocked-no-authorized-device",
+  "firebaseTestsRun": false,
+  "liveWalletConnectAcceptance": false,
+  "walletCredentialBiometricAcceptance": false,
+  "safProcessDeathAcceptance": false,
+  "cloudAccountProvisioned": false,
+  "mainnetTransactions": 0,
+  "backendDeployed": false,
+  "nativeSigningApproved": false,
+  "productionApproved": false,
+  "sourceCommit": null,
+  "verificationScope": "v30 local engineering/security(real Redis)/implementation/browser/frontend/Android builds/JVM/lint/signatures/assets. Isolated local-origin intercepted browser observed real SDK QR creation, validated mobile link, cancellation without saved identity. Relay subscription not acknowledged; no wallet approval, native instrumentation, deployed-site or trading acceptance.",
+  "securityTestsPassed": 7,
+  "securityRedisExecuted": true,
+  "implementationBrowserSuitePassed": true,
+  "implementationChecksPassed": 6,
+  "publicReownProjectConfigured": true,
+  "originAllowlistStatus": "owner-reported-added; not independently verified",
+  "historicalContractEvidence": {
+    "version": 28,
+    "simulatedTestsPassed": 64,
+    "rerunThisBatch": false
+  },
+  "pairingInitiationObservation": {
+    "scope": "Local built UI under intercepted production origin; live relay initiation only, NOT deployed-site or wallet acceptance",
+    "projectId": "6192620197a83e8b29a98f8eb68ecc89",
+    "status": "pairing-initiation-observed",
+    "pairingUriObserved": true,
+    "qrImageObserved": true,
+    "cancelled": true,
+    "savedIdentity": false,
+    "walletApproved": false,
+    "transactionsSent": 0,
+    "signaturesRequested": 0,
+    "relaySubscriptionAcknowledged": false,
+    "relaySocketObserved": true,
+    "relaySocketError": false,
+    "relayRequestMethods": [],
+    "validatedMobileLinkObserved": true
+  }
 }

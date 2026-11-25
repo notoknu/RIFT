@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       run_emulator:
-        description: Run fifteen isolated SQLite/checkpoint/raster tests on a disposable API 35 emulator (uses runner time)
+        description: Run nineteen isolated SQLite/checkpoint/raster/Keystore tests on a disposable API 35 emulator (uses runner time)
         required: false
         type: boolean
         default: false
@@ -50,11 +50,11 @@ jobs:
       - name: Optional real Android SQLite instrumentation execution
         if: github.event_name == 'workflow_dispatch' && inputs.run_emulator
         run: bash android/gradlew -p android --no-daemon connectedDebugAndroidTest
-      - name: Upload offline debug build and verification reports
+      - name: Upload debug build and verification reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: RIFT-offline-debug-preview-and-test-evidence
+          name: RIFT-debug-preview-and-test-evidence
           retention-days: 7
           path: |
             android/app/build/outputs/apk/debug/*.apk

@@ -1,0 +1,47 @@
+[
+  {
+    "script": "test:local-engineering",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:security",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:implementation",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "build",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:browser:implementation",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:edge-browser",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:split-creator",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "android:prepare",
+    "status": 0,
+    "signal": null
+  },
+  {
+    "script": "test:android-shell",
+    "status": 0,
+    "signal": null
+  }
+]

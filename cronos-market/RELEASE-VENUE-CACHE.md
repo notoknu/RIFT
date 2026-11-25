@@ -1,0 +1,9 @@
+# Bounded venue cache update (backend supplement to v28)
+
+Completed per-collection Node venue-cache coordination: same-address request sharing, maximum three active distinct reads, bounded LRU records and bytes, detached validated results, exponential per-address failure cooldown with jitter, two-minute freshness and one-hour stale retention. HTTP failure responses include bounded Retry-After hints; error responses and diagnostics omit provider details and addresses. Normalized snapshots validate chain/address/venue bindings, unknown metrics and safe URLs. Numeric precision and transport-size limits fail closed.
+
+Validation: 378 engineering tests, 7 security tests with isolated real Redis, 6 implementation tests, complete controlled-browser suite and frontend build passed. Fourteen focused venue tests are included in engineering results. Shared normalization is exercised through existing Node/edge parity regressions. A single read-only live venue observation confirmed two concurrent same-address reads plus a later cached read used one upstream request. This is not quota, uptime or coverage acceptance.
+
+No UI source change. Included Android app/test APKs are unchanged v28 historical artifacts, not newly built or device-tested for this backend supplement. Prior 64 contract/42 JVM/3 shell/19 compiled-native evidence is historical; native execution remains zero. No deployment, transactions, paid provisioning or native signing approval.
+
+Limits: cache/cooldown scope is one Node process; negative records may be evicted; not distributed throttling, persistent storage, global provider coordination or edge networking replacement. Hardware acceptance, owned WalletConnect pairing, hosted persistence and independent restore, independent trading review and approved mainnet acceptance, broader feature integrations and licensing remain open.

@@ -1,16 +1,20 @@
 # RIFT — Cronos NFT app
 
+Latest consolidated preview: [v23 release notes](cronos-market/RELEASE-V23.md) and [exact Android build evidence](cronos-market/ANDROID-BUILD-REPORT.json). V23 bundles wallet/launch reliability changes; it does not deploy the backend or activate v2 trading.
+
 Complete clean repository layout: application source is in `cronos-market/`; active GitHub workflows are in root `.github/workflows/`.
 
 - Render-first app/backend target: https://rift-q6qs.onrender.com
 - Legacy Surge browsing site: https://rift.surge.sh
 - Repo: https://github.com/notoknu/RIFT
 
-**Public browsing preview, NOT a full-mainnet trading/wallet release.** Creator accounts/uploads are disabled, no RIFT trading contract is configured, and the native wallet is experimental with no embedded transaction signing. Never import funded wallets or fund the native preview. A free Render service may sleep/cold-start; no always-on availability is guaranteed.
+**Preview, NOT a production mainnet trading/wallet release.** Private profiles were activated against Turso on the last verified hosted commit, with tested retention across Render redeployment. Uploads and trading remain separately gated. The native wallet is experimental with no approved embedded signing. Never import funded wallets. Free services may sleep or have quotas; no always-on availability is guaranteed.
 
-## v20: one Render-connected Android app and private profiles
+## v22: consolidated creator/privacy source and Android preview
 
-See [RENDER-FIRST-V20.md](cronos-market/RENDER-FIRST-V20.md) for the current app changes, migration behavior, profile API, test scope, and required persistent Render storage configuration. The three-mode selector is removed; an explicit network pause is preserved. Private profile storage is implemented in source but is NOT activated on the live backend by copying this repository or installing an APK. Native signing remains disabled, and Android account sign-in still needs a supported external-wallet integration.
+Read [RELEASE-V22.md](cronos-market/RELEASE-V22.md), [FEATURE-MATRIX.md](cronos-market/FEATURE-MATRIX.md) and [MAJOR-UPDATE-WORKLOG.md](cronos-market/MAJOR-UPDATE-WORKLOG.md). This source adds private-workspace export/deletion, source-verification submission/job tracking and the mobile wallet-picker fix. These latest changes have NOT been deployed by packaging the APK. Installing an APK does not update its backend.
+
+The app uses one Render-connected interface; explicit network pause is preserved. See [REMOTE-ACCOUNTS.md](cronos-market/REMOTE-ACCOUNTS.md) for remote account configuration and credential-rotation requirements. Native signing remains disabled/unapproved; real-device external-wallet acceptance is still required.
 
 ## Start
 

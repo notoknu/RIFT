@@ -1,10 +1,24 @@
 import fs from 'node:fs';
-import {formatEther} from 'ethers';
-const SNAPSHOT=new URL('../data/collections.json',import.meta.url);
-let cache=null,expires=0,inflight=null;
+import {collectRankingPages} from '../shared/ranking-pages.js';
+import {boundedBytes} from '../shared/creator-service.js';
+import {fileURLToPath} from 'node:url';
+import {createRefreshResource} from './refresh-resource.js';
+import {createJsonSnapshot} from './json-snapshot.js';
+import {validateDirectorySnapshot} from '../shared/directory-snapshot.js';
 export {buildDirectory} from '../shared/rankings-core.js';
 import {buildDirectory} from '../shared/rankings-core.js';
-const QUERY=`query RiftDirectory($after:String,$sort:CollectionSortInput!){collections(first:50,after:$after,filter:{chains:[CRONOS],verifiedOnly:false},sort:$sort){edges{node{address name chain{name} description logo{url} assetCount ownerCount status floorPrice{latestFloorPriceNative} volume{volumeAllNative volume7dNative}}}pageInfo{hasNextPage endCursor}}}`;
-export async function fetchMintedDirectory(){let nodes=[];for(let field of ['VOLUME_ALL','VOLUME_SEVEN_DAY']){let after=null;for(let page=0;page<2;page++){const res=await fetch('https://api.minted.network/graphql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:QUERY,variables:{after,sort:{field,isAscending:false}}}),signal:AbortSignal.timeout(20000)});if(!res.ok)throw Error('Minted HTTP '+res.status);const j=await res.json(),c=j.data?.collections;if(j.errors?.length||!Array.isArray(c?.edges))throw Error('Minted response invalid');nodes.push(...c.edges.map(e=>e.node));if(!c.pageInfo?.hasNextPage)break;if(!c.pageInfo.endCursor||c.pageInfo.endCursor===after)throw Error('Invalid pagination');after=c.pageInfo.endCursor;}}const overrides=JSON.parse(fs.readFileSync(new URL('../config/collections.json',import.meta.url),'utf8'));return {...buildDirectory(nodes,overrides),updatedAt:new Date().toISOString(),stale:false};}
-export async function getDirectory(){if(cache&&Date.now()<expires)return cache;if(inflight)return inflight;inflight=(async()=>{try{cache=await fetchMintedDirectory();expires=Date.now()+300000;fs.mkdirSync(new URL('../data/',import.meta.url),{recursive:true});fs.writeFileSync(SNAPSHOT,JSON.stringify(cache,null,2));return cache}catch(e){if(!cache&&fs.existsSync(SNAPSHOT)){try{cache=JSON.parse(fs.readFileSync(SNAPSHOT,'utf8'))}catch{}}if(cache)return{...cache,stale:true,warning:'Live refresh failed. Showing the last successful snapshot at the timestamp below.'};throw e}finally{inflight=null}})();return inflight;}
-export function rankingsPlugin(){return{name:'cronos-rankings',configureServer(server){server.middlewares.use('/api/collections',async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');if(req.method!=='GET'){res.statusCode=405;return res.end(JSON.stringify({error:'Method not allowed'}))}try{res.end(JSON.stringify(await getDirectory()))}catch{res.statusCode=502;res.end(JSON.stringify({error:'Minted public data is temporarily unavailable. No API key is required. Try again shortly.',collections:[]}))}})}};}
+export async function fetchMintedDirectory({fetcher=globalThis.fetch}={}){
+ const {nodes,acquisition}=await collectRankingPages(async payload=>{
+  const res=await fetcher('https://api.minted.network/graphql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(20000),redirect:'error',credentials:'omit'});
+  if(!res.ok)throw Error('Minted HTTP '+res.status);
+  return JSON.parse(new TextDecoder().decode(await boundedBytes(res,2097152)));
+ });
+ const overrides=JSON.parse(fs.readFileSync(new URL('../config/collections.json',import.meta.url),'utf8'));
+ return {...buildDirectory(nodes,overrides),acquisition,updatedAt:new Date().toISOString(),stale:false};
+}
+export function createDirectoryResource({load=fetchMintedDirectory,snapshot=createJsonSnapshot(fileURLToPath(new URL('../data/collections.json',import.meta.url))),...options}={}){
+ return createRefreshResource({load,validate:validateDirectorySnapshot,readSaved:snapshot.read,save:snapshot.save,...options});
+}
+const directoryResource=createDirectoryResource();
+export const getDirectory=()=>directoryResource.get();
+export function rankingsPlugin({read=getDirectory}={}){return{name:'cronos-rankings',configureServer(server){server.middlewares.use('/api/collections',async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');if(req.method!=='GET'){res.statusCode=405;return res.end(JSON.stringify({error:'Method not allowed'}))}try{res.end(JSON.stringify(await read()))}catch(error){res.statusCode=503;if(error.retryAfterMs>0)res.setHeader('Retry-After',String(Math.ceil(error.retryAfterMs/1000)));res.end(JSON.stringify({error:'Minted public data is temporarily unavailable. No API key is required. Try again shortly.',collections:[]}))}})}};}

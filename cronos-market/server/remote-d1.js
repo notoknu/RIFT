@@ -6,10 +6,11 @@ export async function remoteD1(env,{clientFactory=createClient}={}){
  if(env.CREATOR_DB_DRIVER!=='libsql'||!accountStorageConfig(env).configured)throw Error('Remote account storage is not configured');
  const client=clientFactory({url:env.CREATOR_LIBSQL_URL,authToken:env.CREATOR_LIBSQL_AUTH_TOKEN,fetch:(input,init)=>fetch(input,{...init,signal:AbortSignal.any([init?.signal,AbortSignal.timeout(15000)].filter(Boolean))})});
  try{await client.executeMultiple(CREATOR_SCHEMA)}catch{client.close();throw Error('Remote account schema initialization failed')}
+ const statements=new WeakMap();
  const object=(result,row)=>row?Object.fromEntries(result.columns.map((column,i)=>[column,row[i]])):null;
- return {close:()=>client.close(),prepare(sql){return {bind(...args){const execute=()=>client.execute({sql,args});return {
+ return {close:()=>client.close(),async batch(items){const specs=items.map(item=>{const spec=statements.get(item);if(!spec)throw Error('Statement belongs to another database');return spec});const results=await client.batch(specs,'write');return results.map(result=>({results:result.rows.map(row=>object(result,row)),meta:{changes:result.rowsAffected}}))},prepare(sql){return {bind(...args){const execute=()=>client.execute({sql,args});const bound={
   async first(){const result=await execute();return object(result,result.rows[0])},
   async all(){const result=await execute();return {results:result.rows.map(row=>object(result,row))}},
   async run(){const result=await execute();return {meta:{changes:result.rowsAffected}}}
- }}}}};
+ };statements.set(bound,{sql,args});return bound}}}};
 }

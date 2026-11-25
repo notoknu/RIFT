@@ -1,0 +1,93 @@
+{
+  "/healthz": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "chainId": 25
+    }
+  },
+  "/api/v1/release": {
+    "status": 200,
+    "body": {
+      "schemaVersion": 1,
+      "apiVersion": "v1",
+      "chainId": 25,
+      "checkedAt": "2026-11-25T04:38:42.269Z",
+      "commit": "3ae9e3dbcaa23ed3c40f08ff943b3d1ae11e8bea",
+      "releaseClass": "preview",
+      "productionApproved": false,
+      "features": [
+        {
+          "id": "discovery",
+          "source": "implemented",
+          "runtime": "provider-dependent",
+          "blockers": [
+            "Coverage and freshness vary by source; not complete chain-wide discovery"
+          ]
+        },
+        {
+          "id": "profiles",
+          "source": "implemented",
+          "runtime": "configured-not-accepted",
+          "blockers": [
+            "Storage-provider durability, redeploy retention and recovery require acceptance"
+          ]
+        },
+        {
+          "id": "uploads",
+          "source": "implemented",
+          "runtime": "disabled",
+          "blockers": [
+            "Requires account storage, pinning provider and finite quota; retention and abuse acceptance remain separate"
+          ]
+        },
+        {
+          "id": "exchange",
+          "source": "implemented",
+          "runtime": "disabled",
+          "blockers": [
+            "Exact contract review, chain/runtime validation, index readiness and end-to-end wallet acceptance required"
+          ]
+        },
+        {
+          "id": "native-wallet",
+          "source": "experimental-vault-no-signer",
+          "runtime": "not-production-approved",
+          "blockers": [
+            "Independent wallet review, real-device acceptance and protected release signing required"
+          ]
+        },
+        {
+          "id": "launch",
+          "source": "implemented-partial-integrations",
+          "runtime": "wallet-and-provider-dependent",
+          "blockers": [
+            "Automatic verification and universal pin/marketplace integrations are not complete"
+          ]
+        }
+      ],
+      "contracts": {
+        "exchange": null,
+        "exchangeRuntimeHash": null
+      },
+      "evidence": {
+        "configurationOnly": true,
+        "tests": "Not inferred from source or environment flags",
+        "android": "Separate build and physical-device acceptance required",
+        "durability": "An operator flag is not proof of a persistent volume or successful restore"
+      },
+      "scope": "Public configuration observations only. No secrets, database paths, account records or unverified production-readiness claims."
+    }
+  },
+  "/api/v1/exchange/capabilities": {
+    "status": 200,
+    "body": {
+      "chainId": 25,
+      "configured": false,
+      "tradingEnabled": false,
+      "address": null,
+      "runtimeHash": null,
+      "review": "Unaudited software. Enabling requires explicit operator release approval. Zero platform fee; wallet pays gas."
+    }
+  }
+}

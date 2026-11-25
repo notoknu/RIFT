@@ -21,8 +21,17 @@ test('dense single block supports hundreds of logs and uint256 IDs without trunc
  const db=index();try{const p=provider(Array.from({length:240},(_,i)=>({...listed(i,10),index:i,transactionHash:hash(1000+i)})));p.logs.push({...listed(2n**200n,10),index:240,transactionHash:hash(4000)});await db.sync(p,{span:1});assert.equal(db.page({limit:48}).items.length,48);assert.equal(db.page().items[0].id,(2n**200n).toString());assert.equal(db.db.prepare('SELECT COUNT(*) n FROM exchange_orders').get().n,241);assert.throws(()=>db.page({limit:49}),/Invalid/);assert.throws(()=>db.page({account:'bad'}),/Invalid/)}finally{db.close()}
 });
 test('wrong chain, regressed head and changing checkpoint fail closed',async()=>{
- const db=index();try{const p=provider([listed()]);p.getNetwork=async()=>({chainId:1n});await assert.rejects(db.sync(p),/Wrong/);p.getNetwork=async()=>({chainId:25n});let count=0;p.getBlock=async n=>({hash:hash(n+(count++?1:0))});await assert.rejects(db.sync(p),/changed/);assert.equal(db.status().indexedThrough,9)}finally{db.close()}
+ const db=index();try{const p=provider([listed()]);p.getNetwork=async()=>({chainId:1n});await assert.rejects(db.sync(p),/Wrong/);p.getNetwork=async()=>({chainId:25n});let count=0;p.getBlock=async n=>({hash:hash(n+(count++?1:0))});await assert.rejects(db.sync(p),/changed|Noncanonical/);assert.equal(db.status().indexedThrough,9)}finally{db.close()}
 });
 test('exchange API never enables an unconfigured release and rejects writes',async()=>{
  const app=express();exchangeAPIPlugin({env:{}}).configureServer({middlewares:app});const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));try{const base='http://127.0.0.1:'+server.address().port+'/api/v1/exchange';let r=await fetch(base+'/capabilities');const config=await r.json();assert.equal(config.tradingEnabled,false);assert.equal(config.configured,false);r=await fetch(base+'/listings');assert.equal(r.status,503);r=await fetch(base+'/capabilities',{method:'POST'});assert.equal(r.status,405)}finally{server.closeAllConnections();await new Promise(r=>server.close(r))}
+});
+test('log blocks must match canonical headers even when the end checkpoint is stable',async()=>{
+ const db=index();try{const orphan={...listed(),blockHash:hash(999)},p=provider([orphan]);await assert.rejects(db.sync(p),/Noncanonical/);assert.equal(db.status().indexedThrough,9);assert.equal(db.page().items.length,0);}finally{db.close()}
+});
+test('invalid block numbers or negative/unsafe log positions cannot alter the index',async()=>{
+ for(const change of [{blockNumber:NaN},{blockNumber:10.5},{index:-1},{index:Number.MAX_SAFE_INTEGER+1}]){const db=index();try{const p=provider();p.getLogs=async()=>[{...listed(),...change}];await assert.rejects(db.sync(p),/Invalid/);assert.equal(db.status().indexedThrough,9);}finally{db.close()}}
+});
+test('two transactions cannot occupy one canonical block log index',async()=>{
+ const db=index();try{const p=provider([listed(),{...listed(1),transactionHash:hash(4567)}]);await assert.rejects(db.sync(p),/Duplicate/);assert.equal(db.page().items.length,0);assert.equal(db.status().indexedThrough,9);}finally{db.close()}
 });

@@ -92,9 +92,31 @@ export function createCreatorService({db,origin,chain,uploadProvider,uploadBytes
     const a=address(publicCollection[1]);if(await query('SELECT address FROM creator_visibility WHERE address=? AND hidden=1',a).first())fail(451,'Collection hidden from RIFT registry after moderation review; on-chain ownership is unchanged');const row=await query('SELECT c.*,p.title AS display_title,p.description AS display_description,p.image_uri AS display_image,p.banner_uri AS display_banner FROM creator_collections c LEFT JOIN creator_presentations p ON p.address=c.address WHERE c.address=?',a).first();if(!row)fail(404,'Collection not registered with RIFT');return respond(row);
    }
    // All remaining supported routes require a session; no financial custody is taken.
-   const known=/^\/api\/v1\/(profile(?:\/export)?|launch-drafts(?:\/[a-f0-9]{64})?|favorites(?:\/0x[\da-fA-F]{40})?|reports|launches\/register|collections\/0x[\da-fA-F]{40}\/presentation|uploads(?:\/[a-f0-9]{64}(?:\/files)?)?)$/;
+   const known=/^\/api\/v1\/(account\/(?:export|delete-private)|profile(?:\/export)?|launch-drafts(?:\/[a-f0-9]{64})?|favorites(?:\/0x[\da-fA-F]{40})?|reports|launches\/register|collections\/0x[\da-fA-F]{40}\/presentation|uploads(?:\/[a-f0-9]{64}(?:\/files)?)?)$/;
    if(!known.test(path))return null;
    const s=await session(request);
+   if(path==='/api/v1/account/export'&&method==='GET'){
+    if(typeof db.batch!=='function')fail(503,'Consistent account export unavailable on this database adapter');
+    const [profiles,drafts,favorites]=await db.batch([
+     query('SELECT version,document,updated FROM creator_profiles WHERE wallet=?',s.address),
+     query('SELECT id,version,document,updated FROM creator_drafts WHERE wallet=? ORDER BY updated DESC,id LIMIT 51',s.address),
+     query('SELECT address FROM creator_favorites WHERE wallet=? ORDER BY address LIMIT 1001',s.address)
+    ]);
+    if(drafts.results.length>50||favorites.results.length>1000)fail(413,'Account export exceeds supported bounds; request operator assistance');
+    const profile=profiles.results[0];return respond({format:'rift-private-workspace',formatVersion:1,chainId:25,exportedAt:new Date(now()).toISOString(),address:s.address,profile:profile?{...JSON.parse(profile.document),version:profile.version,updated:profile.updated}:null,drafts:drafts.results.map(r=>({...r,document:JSON.parse(r.document)})),favorites:favorites.results.map(r=>r.address),excluded:['Wallet keys and on-chain assets','Device-local data and artwork files','Public collection records','Upload/provider and moderation records','Logs and retained backups'],scope:'Consistent private workspace snapshot. Plaintext; store securely. Not a full service-record export or wallet backup.'});
+   }
+   if(path==='/api/v1/account/delete-private'&&method==='POST'){
+    const data=await json(request);if(!data||Object.keys(data).length!==1||data.confirm!=='DELETE PRIVATE WORKSPACE')fail(400,'Explicit private workspace deletion confirmation required');
+    if(typeof db.batch!=='function')fail(503,'Atomic account deletion unavailable on this database adapter');
+    await db.batch([
+     query('DELETE FROM creator_profiles WHERE wallet=?',s.address),
+     query('DELETE FROM creator_drafts WHERE wallet=?',s.address),
+     query('DELETE FROM creator_favorites WHERE wallet=?',s.address),
+     query('DELETE FROM creator_nonces WHERE address=?',s.address),
+     query('DELETE FROM creator_sessions WHERE address=?',s.address)
+    ]);
+    return respond({ok:true,deleted:['profile','drafts','favorites','stored sign-in challenges','account sessions'],retained:['Public collection records','Upload/provider and moderation records','Logs and retained backups','Device-local data and on-chain assets'],scope:'Stored private workspace removed atomically. Does not cancel already authorized in-flight requests, erase backups, unpin IPFS or prevent fresh wallet sign-in.'},200,bearer?{}:{'Set-Cookie':cookie('',0)});
+   }
    if(path==='/api/v1/profile/export'&&method==='GET'){
     const row=await query('SELECT version,document,updated FROM creator_profiles WHERE wallet=?',s.address).first();
     return respond({format:'rift-private-profile',formatVersion:1,exportedAt:new Date(now()).toISOString(),address:s.address,profile:row?{...JSON.parse(row.document),version:row.version,updated:row.updated}:null,scope:'Private profile data only. Not a wallet backup, full account export, or automatic restore package.'});

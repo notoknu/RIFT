@@ -56,3 +56,51 @@ The adapter was tested with real SQL through an isolated local libSQL SDK databa
 ## Provisioning follow-up
 
 Turso database/group `rift-accounts` were created under `aipi`, Oregon, with requested 256 MB database cap, existing starter plan and overages disabled. Real remote account-service tests passed with disposable wallets/cleanup. A separate 30-day database token is stored in Render's server environment only. GitHub source publication, live profile activation, hosted restart/redeploy and recovery acceptance remain outstanding; this is not an APK/wallet production release.
+
+## Consolidated major-update branch (local only)
+
+New private-workspace export/deletion and transactional batching are implemented in source across local SQLite/libSQL, with D1 integration coverage. Source-verification lookup/submission/job tracking UI is implemented with matching-build checks and explicit user confirmation. Mobile pending-banner fix is included. See [MAJOR-UPDATE-WORKLOG.md](MAJOR-UPDATE-WORKLOG.md) for exact scope, exclusions and evidence. No real verification submission or deployment was performed; the existing live profile flow is unchanged. Older statements about missing automatic verification describe the previous release; the new UI automates submission but refresh is manual and provider acceptance remains external.
+
+## Post-audit continuation evidence
+
+Exact current build evidence: ANDROID-BUILD-REPORT.json and evidence/CONTINUED-PIPELINE.json. Local regression: 234 engineering, 7 security including Redis, 6 implementation, full browser/edge/split-creator, 42 Android JVM tests passed. Android lint: 0 errors/8 warnings. Contract clean compile and 40 tests passed; hashes in evidence/CONTRACT-POST-AUDIT-VERIFICATION.json. Instrumentation compiled but not executed. No device acceptance or independent review implied.
+
+V2 seller confirmation now shows fresh gross/royalty/recipient/net estimates before approval for listing or accepting an offer. Rejects unsupported royalties and failed reads; royalties above 10% reject execution rather than being silently capped. Order cards disclose gross and deduction policy. Runtime estimates can change; partial-fill rounding may differ from a total-quantity quote.
+
+Hosted source remains the earlier commit; latest local changes NOT deployed. V2 trading disabled. License choice still unresolved. These facts override any inferred completion from feature presence.
+
+## Wallet/launch continuation (local source only)
+
+Current local regression: 266 engineering tests and 7 security tests including Redis passed; frontend and complete implementation browser suite passed. See WALLET-FIRST-PLAN.md for batch-level limits/evidence. Wallet session hardening, foreground refresh, connection cancellation protection, bounded read-only RPC fallback and fixed-block collection snapshots are implemented locally. Launch read-provider choices are scoped to launchpad reads. Mint now requires fresh preflight/simulation and explicit mint+gas cost review, with signer/network recheck and repeat simulation before tracked submission. This is NOT full launchpad, real-wallet, device, hosted or contract-audit acceptance. None of these continuation batches is included in the previous distributed APK/archive or deployed backend.
+
+### Consolidated v23 snapshot
+
+The v23 APK now bundles the wallet/launch continuation described above. Exact evidence in ANDROID-BUILD-REPORT.json and RELEASE-V23.md: 267 engineering, 7 security, 6 implementation, 46 local contract and 42 JVM tests passed, full implementation browser suite passed. Instrumentation was compiled, NOT executed; no live wallet/mobile relay acceptance. Device-clock mint checks replaced by chain timestamp. Backend changes remain local, exchange not deployed/trading not activated. Historical statements about the previous distributed APK refer to v22, not this v23 build.
+
+### Post-v23 marketplace client acceptance
+
+Current local contract suite: 54 passed, including 8 client-to-compiled-exchange acceptance tests (isolated EDR only). Client settlement rechecks release activation/address/runtime after approval; exits remain available while disabled; private self-listings reject before approval; expiry checks use chain time. Confirmed approvals can survive later failure and must be reviewed/revoked separately. Regression: 267 engineering, 7 security, frontend build and full implementation browser passed. These source changes postdate the v23 APK; no deployed/mainnet/external-marketplace acceptance implied.
+
+### Post-v23 royalty re-review
+
+Seller royalty estimates are re-read after approval; changed royalty/recipient prompts renewed consent before listing/offer acceptance. Explicit block-tagged reads reduce stale latest-cache exposure but do not lock royalties on-chain. Controlled local acceptance demonstrates declining a 5% -> 10% change after approval prevents listing/escrow while leaving the approval active. Current source verification: 55 local contract and 271 engineering tests, 7 security, frontend build and full implementation browser suite passed. Not included in the existing v23 APK; no live trading/independent-audit claim.
+
+### Post-v23 durable Node exchange indexing
+
+Actual compiled exchange -> Node SQLite -> local API integration now verifies fills/offers/refunds, restart persistence, bounded backfill, pagination, and orphan-fill removal/replacement replay. Node index validates each event block hash, safe numeric positions and duplicate global block-log positions before commit (bounded header-read concurrency4). Current results: 59 local contract/integration and 274 engineering tests; 7 security, frontend build, full browser suite passed. This is NOT hosted/D1 quota, throughput, complete-chain or provider-truth acceptance. Source-only; existing v23 APK/backend unchanged.
+
+### Post-v23 edge/D1 canonical validation and parity
+
+Edge exchange now validates event block headers before range staging, pending-chunk application and receipt-row queueing. Each validation step permits <=8 distinct headers; wider event ranges reduce span before staging. Actual compiled exchange event projection agrees between Node SQLite and local D1 for the tested partial-fill scenario. Local D1 tests exercise orphan refusal, staged-header mismatch and bounded range reduction. Current evidence: 60 local contract/integration, 277 engineering, 7 security tests passed; frontend, full browser, edge browser and split creator checks passed. Hosted D1 quota/CPU/throughput, full semantic parity and real-chain acceptance remain OPEN. Existing v23 artifacts/backend unchanged.
+
+### Local D1 persistence/restart acceptance
+
+Disk-persisted workerd/D1 now tested across worker disposal/recreation during partially applied 25-event receipt staging, after final publication, and with unexpired/expired abandoned leases. Partial orders remain hidden; resumed publication preserves exact event/order counts and checkpoint. This is local persistence evidence, NOT abrupt mid-transaction power-loss, hosted storage durability or provider backup restoration. Current rerun: 279 engineering, 7 security and 60 local contract/integration tests passed. No production-code change this batch; browser checks were not rerun. V23 distributed package/backend remain unchanged.
+
+### Post-v23 NFT approval recovery tools
+
+Configured-exchange UI supports read-only token/operator approval inspection plus explicit, simulated/tracked revocation. Works with trading disabled; only current runtime-verified exchange covered. Owned-token checks prevent treating another owner's approval as the connected wallet's; unrelated token spenders are not cleared. Revocation is separate from escrow/order/offer management and costs network gas. Four compiled-client cases and controlled mobile inspection browser passed; current regression64 contract/integration,279 engineering,7 security plus frontend/full browser passed. No mainnet/device/deployment acceptance or all-approval scanner implied. Existing v23 package unchanged.
+
+### Post-v23 submission uncertainty handling
+
+Transaction journal no longer treats generic pre-hash send errors as proof of non-submission. It records submission-unknown, separates explicit wallet rejection and preserves known-hash uncertainty. UI includes legacy-record warnings; hashless checks never pretend to locate or retry a submission. Four unit cases and controlled mobile-browser recovery scenario passed. Current verification64 local contract/integration,283 engineering,7 security; frontend and full browser suite passed. No deployment/device/mainnet acceptance implied; existing v23 package unchanged.

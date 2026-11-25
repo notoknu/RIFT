@@ -1,0 +1,55 @@
+{
+  "release": "ranking-reliability-1",
+  "androidVersionCodeUnchanged": 27,
+  "androidRebuiltThisBatch": false,
+  "engineeringTestsPassed": 343,
+  "securityTestsPassed": 7,
+  "securityRedisExecuted": true,
+  "implementationChecksPassed": 6,
+  "fullControlledBrowserSuitePassed": true,
+  "frontendBuildPassed": true,
+  "focusedTestsPassed": 25,
+  "newRegressionTests": 17,
+  "contractsRerun": false,
+  "nativeInstrumentationExecuted": 0,
+  "backendDeployed": false,
+  "mainnetTransactions": 0,
+  "productionApproved": false,
+  "liveObservation": {
+    "status": "live-observation-only",
+    "collections": 135,
+    "counts": {
+      "allTime": 100,
+      "weekly": 51
+    },
+    "observations": {
+      "inputRows": 200,
+      "uniqueRows": 183,
+      "duplicateRows": 17,
+      "metadataConflicts": 0,
+      "duplicatePolicy": "Conflicting rank metrics reject refresh; metadata chooses a deterministic complete row, not latest."
+    },
+    "acquisition": {
+      "pageLimitPerPeriod": 2,
+      "pageSizeLimit": 50,
+      "periods": [
+        {
+          "field": "VOLUME_ALL",
+          "pages": 2,
+          "rows": 100,
+          "moreSourceRows": true
+        },
+        {
+          "field": "VOLUME_SEVEN_DAY",
+          "pages": 2,
+          "rows": 100,
+          "moreSourceRows": true
+        }
+      ],
+      "atomicSnapshot": false
+    },
+    "coverage": "Minted-only Cronos trading volume and listing floors, not network-wide. Positive-volume top100 per period among acquired rows; missing amounts remain unknown. Up to200 unique collections; ties ordered by address. Categories inferred unless reviewed. Provider pagination is not an atomic fixed-block snapshot.",
+    "acceptanceComplete": false
+  },
+  "scope": "Server/shared ranking/edge update. v27 APK artifacts and Android build report retain historical exact evidence, not a new Android build. Provider observation does not establish network-wide coverage or quotas."
+}

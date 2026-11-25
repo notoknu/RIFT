@@ -51,10 +51,16 @@ export class ExchangeIndex{
   const block=await provider.getBlock(to);if(!block?.hash)throw Error('Missing canonical block');
   const logs=await provider.getLogs({address:this.address,fromBlock:from,toBlock:to,topics:[EXCHANGE_EVENTS.map(n=>exchangeInterface.getEvent(n).topicHash)]});
   if(!Array.isArray(logs)||logs.length>10000)throw Error('Oversized logs; reduce span');
-  const keys=new Set();const events=logs.map(l=>{
-   if(l.removed||l.address?.toLowerCase()!==this.address||!Number.isInteger(l.index)||l.blockNumber<from||l.blockNumber>to||!/^0x[\da-f]{64}$/i.test(l.transactionHash)||!/^0x[\da-f]{64}$/i.test(l.blockHash))throw Error('Invalid exchange log');
-   const key=l.transactionHash+':'+l.index;if(keys.has(key))throw Error('Duplicate log');keys.add(key);return {...decodeExchangeLog(l),tx:l.transactionHash,index:l.index,block:l.blockNumber,hash:l.blockHash};
+  const keys=new Set(),positions=new Set(),blocks=new Map();const events=logs.map(l=>{
+   if(l.removed||l.address?.toLowerCase()!==this.address||!Number.isSafeInteger(l.index)||l.index<0||!Number.isSafeInteger(l.blockNumber)||l.blockNumber<from||l.blockNumber>to||!/^0x[\da-f]{64}$/i.test(l.transactionHash)||!/^0x[\da-f]{64}$/i.test(l.blockHash))throw Error('Invalid exchange log');
+   const key=l.transactionHash+':'+l.index,position=l.blockNumber+':'+l.index;if(keys.has(key)||positions.has(position))throw Error('Duplicate log');keys.add(key);positions.add(position);if(blocks.has(l.blockNumber)&&blocks.get(l.blockNumber)!==l.blockHash.toLowerCase())throw Error('Conflicting log block hashes');blocks.set(l.blockNumber,l.blockHash.toLowerCase());return {...decodeExchangeLog(l),tx:l.transactionHash,index:l.index,block:l.blockNumber,hash:l.blockHash};
   });
+  // A matching end checkpoint alone does not validate each returned log's fork.
+  const blockEntries=[...blocks];let blockCursor=0;
+  const validated=await Promise.allSettled(Array.from({length:Math.min(4,blockEntries.length)},async()=>{
+   while(blockCursor<blockEntries.length){const [number,expected]=blockEntries[blockCursor++];const canonical=await provider.getBlock(number);if(typeof canonical?.hash!=='string'||canonical.hash.toLowerCase()!==expected)throw Error('Noncanonical exchange log block');}
+  }));
+  const invalidBlock=validated.find(result=>result.status==='rejected');if(invalidBlock)throw invalidBlock.reason;
   if((await provider.getBlock(to))?.hash!==block.hash)throw Error('Chain changed during fetch');
   if(ancestor>=this.startBlock&&ancestor!==cfg.last_block){const checkpoint=this.db.prepare('SELECT hash FROM exchange_checkpoints WHERE block=?').get(ancestor);if((await provider.getBlock(ancestor))?.hash!==checkpoint?.hash)throw Error('Recovery ancestor changed')}
   this.db.exec('BEGIN IMMEDIATE');try{

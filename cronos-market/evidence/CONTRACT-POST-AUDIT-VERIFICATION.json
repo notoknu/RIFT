@@ -1,0 +1,21 @@
+{
+  "contract": "RiftExchange",
+  "sourceSha256": "b8afe7a2d8f5eeb986290f1f8d88a2160a60438f227f70e2f2e9a2befa657ed9",
+  "artifactSha256": "cfc96c9b4316d33171d1f546050d47ae0da21dc3bc1b4bccc06109b802a74ae4",
+  "creationBytecodeSha256": "25b9ff8b67d6450a25003eb7675d9756b880e0982dfc8007b2bb52a2a5709a28",
+  "runtimeBytecodeSha256": "c77b54f736c1ee704d7d8ff4bd9a1c48fefb7928930c3f32aaee54607d52cc9b",
+  "compiler": "0.8.24",
+  "optimizer": {
+    "enabled": true,
+    "runs": 200
+  },
+  "evmVersion": "paris",
+  "cleanExecuted": true,
+  "compiledSolidityFiles": 9,
+  "contractTestsPassed": 40,
+  "independentReview": false,
+  "merged": false,
+  "deployed": false,
+  "tradingApproved": false,
+  "dependencyInstallation": "npm ci followed by node rebuild and explicit no-save EDR linux-x64-gnu 0.25.1 installation; npm optional native dependency issue encountered."
+}

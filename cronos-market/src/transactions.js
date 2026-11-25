@@ -39,7 +39,14 @@ export async function trackedTransaction(action,signer,send,context={},storage=g
   }
   record.status=validateReceipt(receipt,record)===1?'confirmed':'reverted';record.blockNumber=receipt.blockNumber;record.blockHash=receipt.blockHash;record.checkedAt=Date.now();record.contractAddress=record.status==='confirmed'?deployedAddress(receipt,record):null;persist(record,storage);
   if(record.status!=='confirmed')throw Error('Transaction reverted');return receipt;
- }catch(e){if(!['confirmed','reverted','cancelled','replaced-different'].includes(record.status))record.status=tx?'submitted-uncertain':'not-submitted';try{persist(record,storage)}catch{}throw e}
+ }catch(e){
+  if(!['confirmed','reverted','cancelled','replaced-different'].includes(record.status)){
+   if(record.hash)record.status='submitted-uncertain';
+   else if(e?.code===4001||e?.code==='ACTION_REJECTED')record.status='wallet-rejected';
+   else {record.status='submission-unknown';record.recoveryNote='No valid transaction hash reached RIFT. The wallet or RPC may have submitted it before the error. Inspect wallet activity and the explorer before repeating this value action. Automatic checks cannot find a hashless submission; no retry was sent.';}
+  }
+  try{persist(record,storage)}catch{}throw e;
+ }
 }
 export async function reconcileTransactions(provider,wallet,storage=globalThis.localStorage){
  if(Number((await provider.getNetwork()).chainId)!==25)throw Error('Recovery requires Cronos chain 25');

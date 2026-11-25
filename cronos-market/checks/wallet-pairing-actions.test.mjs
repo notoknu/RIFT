@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {mobilePairingUri,copyPairingUri} from '../src/wallet-pairing-actions.js';
+const uri='wc:'+ 'a'.repeat(64)+'@2?relay-protocol=irn&symKey='+'b'.repeat(64);
+test('only bounded v2 pairing links can open the external mobile wallet',()=>{assert.equal(mobilePairingUri(uri),uri);for(const input of [null,'javascript:alert(1)','https://evil.example/?uri='+uri,'wc:test@2',uri+'&symKey='+ 'c'.repeat(64),uri+'&evil=https://evil.example',uri+'\n',uri.replace('irn','other'),uri+'&expiryTimestamp=1',uri+'&expiryTimestamp=NaN','x'.repeat(4097)])assert.equal(mobilePairingUri(input),null);});
+test('expiry is checked before opening or copying',async()=>{const valid=uri+'&expiryTimestamp=2000';assert.equal(mobilePairingUri(valid,1999),valid);assert.equal(mobilePairingUri(valid,2000),null);let calls=0;await assert.rejects(copyPairingUri(valid,{writeText:()=>{calls++}}),/expired/);assert.equal(calls,0);});
+test('clipboard absence, synchronous and asynchronous failures have safe actionable errors',async()=>{for(const clipboard of [undefined,{}, {writeText(){throw Error(uri)}},{writeText:async()=>{throw Error(uri)}}])await assert.rejects(copyPairingUri(uri,clipboard),e=>e.message.includes('Clipboard unavailable')&&!e.message.includes('symKey'));});
+test('copy is user-invoked and writes the exact pairing URI once',async()=>{const copied=[];await copyPairingUri(uri,{writeText:async value=>copied.push(value)});assert.deepEqual(copied,[uri]);});

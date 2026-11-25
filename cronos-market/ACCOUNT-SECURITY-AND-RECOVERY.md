@@ -42,3 +42,7 @@ A successful probe means SQLite and recovery operations work **right now on that
 8. Establish encrypted off-host backups, retention, monitoring, access control and incident response.
 
 No hosted storage is provisioned or activated by this document. Android's account UI shares these APIs, but real-device pairing/export/lifecycle acceptance remains separate. This batch does not change the device vault, enable signing or approve a production wallet release.
+
+## Local major-update extension
+
+The new privacy center adds `/api/v1/account/export` and `/api/v1/account/delete-private` with transactional profile/draft/favorite export and atomic removal of stored private workspace records, sign-in challenges and sessions. Typed confirmation is `DELETE PRIVATE WORKSPACE`. See MAJOR-UPDATE-WORKLOG.md for retained record classes and in-flight request limits. This is not full retained-service-data export/erasure or wallet recovery, and the new endpoints have not been deployed in this batch.

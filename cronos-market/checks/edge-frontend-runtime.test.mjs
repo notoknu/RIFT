@@ -17,6 +17,9 @@ test('real workerd serves SPA assets and D1 signed sessions on one origin',async
   const challenge=await(await send('/auth/nonce','POST',{address:wallet.address})).json();const signed=await send('/auth/verify','POST',{nonce:challenge.nonce,signature:await wallet.signMessage(challenge.message)});assert.equal(signed.status,200);const raw=signed.headers.get('set-cookie');assert.match(raw,/HttpOnly/);assert.match(raw,/SameSite=Strict/);assert.match(raw,/Secure/);const cookie=raw.split(';')[0];
   assert.equal((await send('/launch-drafts','POST',{mode:0,config:{name:'Runtime sign-in fixture'}},cookie)).status,201);
   assert.equal((await send('/favorites','PUT',{addresses:[]},cookie,'https://evil.example')).status,403);
-  assert.equal((await send('/auth/logout','POST',{},cookie)).status,200);assert.equal((await send('/launch-drafts','GET',undefined,cookie)).status,401);
+  assert.equal((await send('/profile','PUT',{version:0,displayName:'D1 workspace fixture'},cookie)).status,200);
+  const workspace=await send('/account/export','GET',undefined,cookie);assert.equal(workspace.status,200);const exported=await workspace.json();assert.equal(exported.profile.displayName,'D1 workspace fixture');assert.equal(exported.drafts.length,1);
+  assert.equal((await send('/account/delete-private','POST',{confirm:'DELETE PRIVATE WORKSPACE'},cookie)).status,200);assert.equal((await send('/launch-drafts','GET',undefined,cookie)).status,401);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM creator_profiles WHERE wallet=?').bind(wallet.address.toLowerCase()).first()).n,0);assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM creator_drafts WHERE wallet=?').bind(wallet.address.toLowerCase()).first()).n,0);
  }finally{await mf?.dispose();await rm(dir,{recursive:true,force:true})}
 });

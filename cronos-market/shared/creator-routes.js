@@ -2,6 +2,8 @@
 export function creatorRoute(pathname,method='GET'){
  const path=pathname.split('?')[0].replace(/\/$/,'');
  const routes=[
+ [/^\/api\/v1\/account\/export$/,['GET']],
+ [/^\/api\/v1\/account\/delete-private$/,['POST']],
  [/^\/api\/v1\/auth\/(nonce|verify|logout|logout-all)$/,['POST']],
  [/^\/api\/v1\/auth\/session$/,['GET']],
  [/^\/api\/v1\/profile$/,['GET','PUT','DELETE']],

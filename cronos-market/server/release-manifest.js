@@ -18,7 +18,7 @@ export function releaseManifest(env=process.env,{now=Date.now()}={}){
   {id:'uploads',source:'implemented',runtime:uploads?'configured-not-accepted':'disabled',blockers:['Requires account storage, pinning provider and finite quota; retention and abuse acceptance remain separate']},
   {id:'exchange',source:'implemented',runtime:exchange&&env.EXCHANGE_TRADING_ENABLED==='1'?'operator-enabled-not-accepted':'disabled',blockers:['Exact contract review, chain/runtime validation, index readiness and end-to-end wallet acceptance required']},
   {id:'native-wallet',source:'experimental-vault-no-signer',runtime:'not-production-approved',blockers:['Independent wallet review, real-device acceptance and protected release signing required']},
-  {id:'launch',source:'implemented-partial-integrations',runtime:'wallet-and-provider-dependent',blockers:['Automatic verification and universal pin/marketplace integrations are not complete']}
+  {id:'launch',source:'implemented-partial-integrations',runtime:'wallet-and-provider-dependent',blockers:['Source verification requires provider acceptance; universal pin/marketplace integrations remain incomplete']}
  ],contracts:{exchange:exchange?env.EXCHANGE_ADDRESS:null,exchangeRuntimeHash:exchange?env.EXCHANGE_RUNTIME_HASH:null},
  evidence:{configurationOnly:true,tests:'Not inferred from source or environment flags',android:'Separate build and physical-device acceptance required',durability:'An operator flag is not proof of a persistent volume or successful restore'},
  scope:'Public configuration observations only. No secrets, database paths, account records or unverified production-readiness claims.'};
