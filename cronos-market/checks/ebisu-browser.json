@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "scenarios": [
+    "accessible collection tabs",
+    "separate external venue snapshot with null versus zero",
+    "loaded-only name/ID browsing and uint ordering",
+    "collection-scoped funded offers without external trading claims",
+    "clickable token traits propagate to collection-index filters",
+    "360/393/768/1440 layout"
+  ],
+  "pageErrors": []
+}

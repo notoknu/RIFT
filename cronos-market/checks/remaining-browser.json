@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "scenarios": [
+    "Unconfigured v2 gate",
+    "24 layered tokens preview",
+    "Artwork ZIP download",
+    "Combination bound error",
+    "Regenerate after edits",
+    "375/768/1440 no horizontal overflow",
+    "Collection grid and loaded-trait filtering",
+    "Operator-disabled exchange blocks buys but exposes exits",
+    "Indexed global trait query without undefined owner",
+    "ERC1155 indexed token permalink"
+  ],
+  "pageErrors": []
+}

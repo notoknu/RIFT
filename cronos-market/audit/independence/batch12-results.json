@@ -1,0 +1,109 @@
+{
+  "batch": 12,
+  "scope": "Source-only integrated range-to-stage dispatch, durable finite scheduling and reviewed stage/job recovery/terminal retention",
+  "verification": {
+    "engineering": 678,
+    "new_tests": 78,
+    "focused_exchange_integration": 277,
+    "new_test_breakdown": {
+      "dispatch": 16,
+      "jobs": 18,
+      "scheduler": 9,
+      "stage_review": 14,
+      "job_review": 11,
+      "stage_archive": 10
+    },
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "implemented": [
+    "Range receipt scanning\u2192staging only at recognized pre-publication gate, under one lease/shared RPC budget",
+    "32persisted jobs with DB-clock due/claim/finish, exact version/token/owner and no expired-running automatic replay",
+    "Finite1\u20138job scheduler, no duplicate stream claim per invocation, progress/idle delay and capped exponential lease-busy backoff",
+    "Reviewed exact acknowledged stage-marker closure with fresh publication observations and atomic audit/marker CAS",
+    "Reviewed job rearm under fresh exchange fence and checkpoint/journal/stage evidence; no exchange replay",
+    "Terminal published/invalidated stage archive with0600exclusive create/fsync/bounded readback and reviewed atomic audit/prune",
+    "Actual child-process SIGKILL after exchange dispatch before job completion leaves running job and no auto replay"
+  ],
+  "schema": "All new namespaces/supplements explicitly initialized; no released checksum changed; no runtime auto-create",
+  "bounds": {
+    "jobs": 32,
+    "scheduler_jobs_per_invocation_max": 8,
+    "dispatch_units_max": 8,
+    "receipt_batch_max": 32,
+    "transactions_per_staged_block": 4096,
+    "receipt_logs": 8192,
+    "raw_data_topic_bytes": 2097152,
+    "matching_exchange_events": 512,
+    "stage_document_bytes": 2097152,
+    "retained_stage_rows": 16,
+    "total_stage_document_bytes": 8388608,
+    "terminal_archive_file_bytes": 8388608,
+    "stage_review_audits": 256,
+    "job_review_audits": 256,
+    "stage_archive_audits": 256,
+    "each_audit_table_document_bytes": 1048576
+  },
+  "remaining_assistant": [
+    "Operational CLI/config/daemon/supervisor/health/alerts/soak and fleet scheduling policy",
+    ">512matching-event/larger final-repository strategy",
+    "Unified authenticated/encrypted streaming/off-host journal/stage/job/review-aware backup and restore",
+    "Nonmatching/conflicting/superseded recovery strategies and audit rotation",
+    "Hosted acceptance automation and reviewed authority/cutover/rollback implementation",
+    "Independent completeness/live Cronos/proxy/runtime policy; collection/wallet/statistics projections; dependency removal; public API/SDK",
+    "Creator/security/device preparation and fixes"
+  ],
+  "owner": [
+    "Physical locked dedicated-device operation when exact artifacts ready",
+    "License/official-platform rights decision",
+    "Exact consequential reviewed release/migration/signing/spend approvals within standing limits",
+    "Specific owner-only settings/access only when automation cannot; none immediately requested"
+  ],
+  "joint_external": [
+    "Designated disposable hosted consistency/transactions/limits/restart/restore acceptance",
+    "Independent security review and reviewed activation",
+    "Actual Android/native-wallet acceptance"
+  ],
+  "no_immediate_owner_action": true,
+  "limits": [
+    "Explicit callable dispatcher/scheduler, not installed service/CLI or production worker/API selection",
+    ">512matching events unsupported; no partial-block checkpoints",
+    "Single provider trusted, not independent receipt-trie/consensus/completeness proof",
+    "Local archives not encrypted/authenticated/off-host retained restore",
+    "Reviewed hashes/confirmation strings not authentication; caller authorization/evidence policy required",
+    "Fresh observation plus marker CAS not cross-store/chain atomicity",
+    "SDK/database calls not guaranteed hard-deadline cancellation; reads may continue after caller stop",
+    "Any unrecognized failure/cancellation/cleanup uncertainty quarantines jobs; automatic generic transport retry policy intentionally not implemented"
+  ],
+  "activation": {
+    "hosted_probes": false,
+    "hosted_db_writes": false,
+    "cloud_migration": false,
+    "deployment": false,
+    "production_selection_change": false,
+    "paid_provisioning": false,
+    "cro_spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false,
+    "production_archive_prune": false
+  },
+  "evidence": {
+    "final_engineering": "independence-batch12-final-engineering.log",
+    "focused": "platform-batch12-focused.log",
+    "implementation_contracts_build_browser_android": "independence-batch12-regression.log",
+    "security": "independence-batch12-security.log",
+    "baseline_scope": "independence-batch12-baseline-comparison.json"
+  },
+  "verification_notes": [
+    "Full combined regression passed677engineering and all other checks. Final error-sanitization fix added one test; full final engineering rerun passed678/678 and focused rerun277/277.",
+    "package-lock unchanged; existing source comparisons have no missing baseline files; contract/frontend/native production sources unchanged.",
+    "All job/schema/review/prune mutations used disposable test databases/files. No actual owner approval was inferred from fixture review strings."
+  ],
+  "runbook": "EXCHANGE-JOBS-RECOVERY-RUNBOOK.md",
+  "ownership": "WORK-OWNERSHIP.md"
+}

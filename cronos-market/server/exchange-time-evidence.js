@@ -1,0 +1,15 @@
+import {projectionPublicationHash} from './projection-publication.js';
+const need=(v,c)=>{if(!v)throw Object.assign(Error(c),{code:c})};
+const exact=(o,k)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join(',')===[...k].sort().join(',');
+/** Reviewed header samples, not a header-chain consensus verifier. Every event
+ * block plus the checkpoint is bound to the accepted image and source pin. */
+export function admitExchangeTimeEvidence({document,reviewedHash,image,acceptance,now=Date.now()}={}){
+ need(exact(document,['format','chainId','imageDigest','generatedAt','expiresAt','blocks'])&&document.format==='rift-exchange-time-evidence-v1'&&document.chainId===25&&/^[a-f0-9]{64}$/.test(reviewedHash||'')&&projectionPublicationHash(document)===reviewedHash&&acceptance.evidenceDigests.includes(reviewedHash)&&document.imageDigest===projectionPublicationHash(image),'TIME_EVIDENCE_REVIEW_REQUIRED');
+ need(Number.isSafeInteger(document.generatedAt)&&document.generatedAt>0&&document.generatedAt<=acceptance.acceptedAt&&Number.isSafeInteger(document.expiresAt)&&document.expiresAt>now&&document.expiresAt<=acceptance.expiresAt&&document.expiresAt>document.generatedAt&&document.expiresAt-document.generatedAt<=86400000,'TIME_EVIDENCE_EXPIRED');
+ need(Buffer.byteLength(JSON.stringify(document))<=2097152,'TIME_EVIDENCE_BYTE_LIMIT');
+ const required=new Map([[acceptance.indexedThrough,acceptance.blockHash]]);for(const event of image.tables.find(t=>t.name==='exchange_events').rows){need(!required.has(event.block)||required.get(event.block)===event.block_hash,'TIME_EVIDENCE_EVENT_HASH_CONFLICT');required.set(event.block,event.block_hash)}
+ need(Array.isArray(document.blocks)&&document.blocks.length===required.size&&document.blocks.length<=10001,'TIME_EVIDENCE_BLOCK_SET_INVALID');const times=new Map();let previousBlock=-1,previousTime=-1;
+ for(const row of document.blocks){need(exact(row,['number','hash','timestamp'])&&Number.isSafeInteger(row.number)&&row.number>previousBlock&&row.number>=image.binding.startBlock&&row.number<=acceptance.indexedThrough&&required.get(row.number)===row.hash&&Number.isSafeInteger(row.timestamp)&&row.timestamp>0&&row.timestamp>=previousTime&&row.timestamp<=Math.floor(document.generatedAt/1000),'TIME_EVIDENCE_BLOCK_INVALID');times.set(row.number,row.timestamp);previousBlock=row.number;previousTime=row.timestamp}
+ need(times.size===required.size&&times.has(acceptance.indexedThrough),'TIME_EVIDENCE_BLOCK_MISSING');const endTimestamp=times.get(acceptance.indexedThrough);
+ return {times,endTimestamp,expiresAt:document.expiresAt,summary:{format:document.format,evidenceDigest:reviewedHash,sampledBlocks:times.size,checkpointTimestamp:endTimestamp,windowBasis:'Checkpoint Unix seconds, not current wall-clock time; (end-duration,end] within admitted deployment interval.',scope:'Hash-reviewed event-block/checkpoint timestamp samples bound to source acceptance. Not header-chain linkage, independent RPC agreement or timestamp consensus proof.'}};
+}

@@ -1,0 +1,59 @@
+{
+  "batch": 3,
+  "scope": "Source-only candidate repository reads and bounded RPC/reorg acquisition; no production wiring",
+  "changes": [
+    "Snapshot-consistent orders/activity/checkpoints/status interfaces",
+    "Exact uint256 pagination and legacy query parity",
+    "Optional revision guard on subsequent pages",
+    "Chain25, deployed-runtime, bounded logs/header and retained-ancestor reorg synchronizer"
+  ],
+  "verification": {
+    "engineering": {
+      "passed": 449,
+      "failed": 0
+    },
+    "new_query_tests": 7,
+    "new_sync_tests": 19,
+    "focused_repository_query_sync": 48,
+    "security_real_isolated_redis": 7,
+    "simulated_contract_tests": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_local_shell_artifact_tooling": 11
+  },
+  "attempt_notes": [
+    "Initial engineering runs used default older JDK: 447/449; two JVM compilation failures. Final full suite explicitly used Microsoft JDK17 and Node22, passed449/449."
+  ],
+  "activation": {
+    "production_wiring": false,
+    "hosted_turso_writes": false,
+    "deployment": false,
+    "paid_resources": false,
+    "mainnet_spend": false,
+    "trading_activation": false,
+    "native_signing_approval": false,
+    "new_apk": false
+  },
+  "remaining": [
+    "Single-RPC completeness/receipt scanning and dense-block fallback",
+    "RPC deadlines/cancellation and adaptive range scheduling",
+    "Fresh-client ambiguous-commit reconciliation",
+    "Disposable hosted migration, transaction limits, restart and independent restore acceptance",
+    "Reviewed authoritative worker/API wiring",
+    "Collection/wallet adapters, jobs, competitor-dependency removal, API/SDK, contract/device/license acceptance"
+  ],
+  "limitations": [
+    "Deterministic RPC fixtures and actual disposable local libSQL; no live RPC synchronization or cloud durability claim",
+    "At512logs stops; fewer results do not prove absence of RPC truncation",
+    "Only event/end/recovery headers checked, not complete intermediate ancestry",
+    "Exact runtime does not certify proxy implementation/admin safety"
+  ],
+  "evidence": [
+    "platform-sync-query-focused.log",
+    "independence-batch3-regression.log",
+    "independence-batch3-security.log",
+    "independence-batch3-artifact-tooling.log",
+    "independence-batch3-wrong-jdk-attempt.log"
+  ]
+}

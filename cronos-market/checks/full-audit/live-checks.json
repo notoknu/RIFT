@@ -1,0 +1,78 @@
+[
+  {
+    "path": "/healthz",
+    "status": 200,
+    "ms": 36,
+    "summary": {
+      "status": "ok",
+      "chainId": 25
+    }
+  },
+  {
+    "path": "/api/collections",
+    "status": 200,
+    "ms": 6,
+    "summary": {
+      "count": 135,
+      "counts": {
+        "allTime": 100,
+        "weekly": 55
+      },
+      "stale": false,
+      "coverage": "Minted-only Cronos trading volume and listing floors, not network-wide. Weekly ranks include positive 7-day volume only. Up to 100 per period; ties ordered by address. Categories inferred from descriptions unless reviewed."
+    }
+  },
+  {
+    "path": "/api/search?q=Six%20Seven",
+    "status": 200,
+    "ms": 6395,
+    "summary": {
+      "matches": 1,
+      "warnings": []
+    }
+  },
+  {
+    "path": "/api/crosscheck",
+    "status": 200,
+    "ms": 838,
+    "summary": {
+      "count": 151,
+      "matched": 46,
+      "scope": "Independent marketplace statistics; not expected to match. Missing from this sample does not mean absent from a marketplace. No volumes are added together."
+    }
+  },
+  {
+    "path": "/api/wallet-nft?address=0x8642755d71ead02c4cbbcf414e07083d87b67982&tokenId=1",
+    "status": 200,
+    "ms": 463,
+    "summary": {
+      "name": "Six Seven $SISE #1",
+      "traits": 8,
+      "image": true
+    }
+  },
+  {
+    "path": "/api/portfolio?address=invalid",
+    "status": 400,
+    "ms": 3,
+    "summary": {
+      "error": "Invalid address, token ID or page"
+    }
+  },
+  {
+    "path": "/api/search?q=x",
+    "status": 400,
+    "ms": 2,
+    "summary": {
+      "error": "Use 2–100 characters and a valid page."
+    }
+  },
+  {
+    "path": "/api/no-such-endpoint",
+    "status": 404,
+    "ms": 2,
+    "summary": {
+      "error": "Unknown endpoint"
+    }
+  }
+]

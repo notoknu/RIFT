@@ -1,0 +1,26 @@
+{
+  "scope": "Batch2 candidate libSQL exchange repository, not live backend migration",
+  "engineeringPassed": 423,
+  "newStoreTestsPassed": 22,
+  "securityPassed": 7,
+  "securityRedisExecuted": true,
+  "simulatedContractsPassed": 64,
+  "implementationPassed": 6,
+  "fullControlledBrowserSuitePassed": true,
+  "frontendBuildPassed": true,
+  "localAndroidShellArtifactToolingPassed": 11,
+  "androidRebuilt": false,
+  "nativeTestsExecuted": 0,
+  "hostedTursoWrittenOrMigrated": false,
+  "productionStoreSwitched": false,
+  "rpcCanonicalAcquisitionIntegrated": false,
+  "deployed": false,
+  "tradingActivated": false,
+  "transactionsSent": 0,
+  "sourceFiles": {
+    "server/platform-exchange-store.js": "32067dc7f1426ec2a4e9b3b3531fa1b0c7f6791c4cdd1edbfe51a4d81394eee9",
+    "shared/platform-index-schema.js": "bec9daf31bf07dd961a833099a862b69c5eff546e2b70047caed8a3d6b30d37f",
+    "checks/platform-exchange-store.test.mjs": "a6179f56b51609a78ad9b837be5d24a65dfedc29260b27ef8130ff34c164a9b5",
+    "PLATFORM-INDEX-STORE.md": "1babdd8de277263b2c5cf38aa9c2a934f453388b205184bad536fdc7db690d55"
+  }
+}

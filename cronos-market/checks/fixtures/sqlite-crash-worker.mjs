@@ -6,7 +6,7 @@ const wallet='0x'+'1'.repeat(40),contract='0x'+'2'.repeat(40);
 const store=new IndexStore(file);
 store.db.exec('PRAGMA synchronous=FULL; PRAGMA wal_autocheckpoint=0;');
 store.track(wallet);
-store.commit(wallet,[{address:contract,tokenId:'7',standard:'ERC-721',block:7}],7,'committed-hash',9);
+store.commit(wallet,[{address:contract,tokenId:'7',standard:'ERC-721',block:7}],7,'0x'+'7'.repeat(64),9);
 if(mode==='uncommitted'){
  store.db.exec('BEGIN IMMEDIATE');
  store.db.prepare('UPDATE wallets SET last=999,hash=? WHERE address=?').run('uncommitted-hash',wallet);

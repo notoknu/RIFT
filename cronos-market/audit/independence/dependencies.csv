@@ -1,0 +1,16 @@
+component,current_source,role,core_dependency_today,target_role,acceptance_required
+collection_directory,server/rankings.js,Minted ranking acquisition,yes,optional sourced comparison,RIFT-owned catalog and rankings under competitor blackout
+search,server/search.js,Minted and Wolfswap search,yes,optional adapter,RIFT registry search works from cold state without adapters
+name_catalog,server/catalog.js,Wolfswap collection catalog,yes,optional adapter,persist and query own collection registry
+portfolio_discovery,server/discovery.js,Cronos explorer tables,yes,optional supplementary source,owned event index with visible admitted coverage
+chain_reads,server/portfolio.js,Cronos RPC,yes,infrastructure adapter,chain validation bounded failover and honest outage state
+venue_comparison,server/crosscheck.js,Wolfswap snapshots,no for future RIFT core,optional attributed adapter,core blackout test no invented prices
+venue_art,server/images.js,Minted and venue CDN,no for future RIFT core,optional attributed art,canonical URI resolver still works when adapter off
+metadata,server/wallet-assets.js,creator HTTPS and IPFS gateways,depends on collection,external originals with provenance,SSRF protection retention and cold-cache failure tests
+account_storage,server/remote-d1.js,Turso libSQL,yes for selected infrastructure,authoritative portable repository,hosted restart and independent restore not accepted
+index_storage,server/exchange-index.js,local SQLite,yes,remote authoritative adapter,persistent transactional events checkpoints fencing replay
+registered_collection_admission,server/collection-config.js,local registry before batch1,yes for auto registration,authoritative registry read through bridge,batch1 SDK/local tests not hosted acceptance
+wallet_connection,src/walletconnect.js,Reown relay,yes for WalletConnect,connection adapter,owner device connection reported further lifecycle gates remain
+uploads,shared/pinata-provider.js,Pinata,optional disabled,creator-owned optional storage,finite quota rights retention and no silent paid provisioning
+verification,src/LaunchStudio.jsx,explorer verification handoff,external acceptance,exportable source/artifact workflow,exact artifact and provider submission result separate
+hosting,server/production.js,Render infrastructure,yes for current host,portable reproducible deployment,worker execution and sleep/restart measurements

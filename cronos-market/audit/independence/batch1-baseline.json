@@ -1,0 +1,21 @@
+{
+  "scope": "Prior clean source archive as rollback/reference; new working source is not a clean-baseline test run",
+  "baselineArchive": "RIFT-hosting-guard-source.zip",
+  "sha256": "61d24eef4cb915cba9ad386789a7c9e686beddf17fea4a95f0fcccfde2207f0a",
+  "deployedCommitLastObserved": "559b528dbad2193209be5c759169458281a2062f",
+  "exactDeployedWorkspaceParityVerified": false,
+  "currentWorkingChangesRelativeToArchive": [
+    "android/app/build.gradle",
+    "package.json",
+    "server/collection-api.js",
+    "server/collection-config.js",
+    "server/collection-worker.js",
+    "server/status-api.js"
+  ],
+  "toolchain": {
+    "node": "v22.23.5",
+    "java": "openjdk version \"17.0.21.1\" 2026-11-17 LTS"
+  },
+  "chainTransactionsSent": 0,
+  "nativeSigningApproved": false
+}

@@ -1,0 +1,52 @@
+{
+  "batch": 7,
+  "scope": "Source-only adaptive bounded scanner and outstanding acceptance-gate map",
+  "implementation": [
+    "Receipt-first adaptive scanner with acquisition-limit-only range reduction",
+    "Single-block capped log query can switch to receipts",
+    "Shared RPC call budget and aggregate acquisition deadline",
+    "At most one successful publication; no uncertain-write replay",
+    "Gate map and non-executed disposable hosted migration/restore acceptance sequence"
+  ],
+  "verification": {
+    "engineering": 499,
+    "new_scan_tests": 13,
+    "focused_repository_query_sync_rpc_recovery_receipt_scan": 98,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "limits": [
+    "Single oversized receipt block stops for reviewed staging",
+    "No independently verified completeness policy",
+    "No durable recovery journal or production lifecycle integration",
+    "Deadline does not race publication once commit starts",
+    "Underlying transport cancellation and hosted throughput not established"
+  ],
+  "remaining": [
+    "Durable single-block staging and recovery-intent journal",
+    "Worker lifecycle/jobs and authoritative shared API wiring",
+    "Hosted consistency, migration/import, limits, restart and independent restore acceptance",
+    "Collection/wallet adapters, core dependency removal, own stats, external API/SDK",
+    "Contract/release security, creator workflow, physical-device/native-signing and licensing acceptance"
+  ],
+  "activation": {
+    "production_wiring": false,
+    "hosted_probes": false,
+    "remote_writes": false,
+    "migration": false,
+    "deployment": false,
+    "spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "evidence": [
+    "platform-batch7-focused.log",
+    "independence-batch7-regression.log",
+    "independence-batch7-security.log"
+  ]
+}

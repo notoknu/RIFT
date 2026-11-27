@@ -1,0 +1,81 @@
+{
+  "batch": 8,
+  "scope": "Larger source-only recovery journal, bounded lifecycle and local independent-restore pass; not full production completion",
+  "changes": [
+    "Explicit additive separate-client recovery journal, sanitized immutable candidate, phase CAS, one outstanding intent per stream, bounded capacity",
+    "Journal-before-publication bounded adaptive scanner integration and pending-startup block",
+    "Fresh-client persisted-candidate restart observation; no automatic replay or release",
+    "Real separate-process SIGKILL after exchange commit before journal acknowledgement",
+    "Bounded consistent snapshot export and absent-stream-only atomic restore with ABI/reducer verification",
+    "Assistant/owner/joint work ownership document"
+  ],
+  "verification": {
+    "engineering": 527,
+    "new_tests": 28,
+    "new_journal_lifecycle_tests": 19,
+    "new_snapshot_restore_tests": 9,
+    "focused_exchange_repository_and_integration": 126,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "journal_limits": {
+    "records": 256,
+    "document_bytes_total": 8388608,
+    "intent_bytes": 2097152,
+    "outstanding_per_stream": 1
+  },
+  "snapshot_limits": {
+    "events": 4096,
+    "orders": 512,
+    "checkpoints": 32,
+    "data_bytes": 8388608
+  },
+  "activation": {
+    "production_wiring": false,
+    "hosted_probes": false,
+    "remote_writes": false,
+    "cloud_migration": false,
+    "deployment": false,
+    "paid_resources": false,
+    "spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "remaining_assistant": [
+    "Durable oversized-single-block staging",
+    "Reviewed journal resolution and retention/archival tooling",
+    "Full worker/jobs/supervisor lifecycle",
+    "Streaming/authenticated/encrypted backup tooling and journal-aware restore packaging",
+    "Hosted acceptance automation and shared API/worker cutover",
+    "Independent completeness policy and live Cronos compatibility",
+    "Collection/wallet/stats/dependency-removal/public API/SDK and acceptance preparation"
+  ],
+  "remaining_owner": [
+    "Physical dedicated-device participation when exact artifacts/instructions are ready",
+    "License/official-rights decision",
+    "Review/approval of exact consequential migration/release/signing/spend plans under standing limits",
+    "Specific owner-only service access/settings only if automation cannot perform them"
+  ],
+  "remaining_joint_external": [
+    "Explicitly designated disposable hosted migration/restore/consistency acceptance",
+    "Independent security review",
+    "Reviewed production activation and actual device/native-wallet acceptance"
+  ],
+  "limitations": [
+    "Local libSQL process-kill/reopen/restore evidence is not hosted primary durability or power-loss certification",
+    "Pending/held intent resolution not automatic and remains unfinished",
+    "Snapshot digests are drift checks, not authenticity or blockchain proof; journal history not included",
+    "Bounded lifecycle is not a production-selected daemon or complete scheduler"
+  ],
+  "evidence": [
+    "platform-batch8-focused.log",
+    "independence-batch8-regression.log",
+    "independence-batch8-security.log"
+  ],
+  "ownership_document": "WORK-OWNERSHIP.md"
+}

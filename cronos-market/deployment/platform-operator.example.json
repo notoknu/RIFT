@@ -1,0 +1,26 @@
+{
+  "format": "rift-exchange-operator-v1",
+  "purpose": "candidate-only",
+  "queuePath": "/absolute/reviewed-candidate/jobs.sqlite",
+  "streams": [
+    {
+      "binding": {
+        "chainId": 25,
+        "address": "REPLACE_WITH_REVIEWED_EXCHANGE_ADDRESS",
+        "startBlock": 0,
+        "runtimeHash": "REPLACE_WITH_EXACT_REVIEWED_RUNTIME_HASH"
+      },
+      "indexPath": "/absolute/reviewed-candidate/index.sqlite",
+      "journalPath": "/absolute/reviewed-candidate/journal.sqlite",
+      "stagesPath": "/absolute/reviewed-candidate/stages.sqlite",
+      "rpcEnv": "RIFT_RPC_CANDIDATE"
+    }
+  ],
+  "supervisor": {
+    "owner": "candidate-operator",
+    "maxTicks": 1,
+    "maxJobs": 4,
+    "intervalMs": 1000,
+    "maxRunMs": 300000
+  }
+}

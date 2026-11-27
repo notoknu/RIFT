@@ -1,0 +1,41 @@
+[
+  {
+    "width": 375,
+    "page": "Discover",
+    "horizontalOverflow": false
+  },
+  {
+    "width": 375,
+    "page": "Launch",
+    "horizontalOverflow": false
+  },
+  {
+    "width": 768,
+    "page": "Discover",
+    "horizontalOverflow": false
+  },
+  {
+    "width": 768,
+    "page": "Launch",
+    "horizontalOverflow": false
+  },
+  {
+    "width": 1440,
+    "page": "Discover",
+    "horizontalOverflow": false
+  },
+  {
+    "width": 1440,
+    "page": "Launch",
+    "horizontalOverflow": false
+  },
+  {
+    "test": "Wallet picker accessibility",
+    "roleDialogCount": 1,
+    "focusInside": true
+  },
+  {
+    "test": "Wallet picker Escape dismissal",
+    "stillOpen": false
+  }
+]

@@ -1,0 +1,20 @@
+import {constants} from 'node:fs';import {open} from 'node:fs/promises';import {isAbsolute} from 'node:path';
+import {requireRecovery as need} from './platform-unified-validation.js';
+import {readUnifiedKey,createUnifiedBackup,verifyUnifiedBackup,planUnifiedRestore,restoreUnifiedBackup,rotateUnifiedBackup,runUnifiedRecoveryDrill} from './platform-unified-recovery.js';
+async function readPlan(path){need(typeof path==='string'&&isAbsolute(path),'ABSOLUTE_UNIFIED_PLAN_PATH_REQUIRED');let file;try{file=await open(path,constants.O_RDONLY|constants.O_NOFOLLOW);const s=await file.stat();need(s.isFile()&&s.size>0&&s.size<=65536,'UNIFIED_PLAN_SIZE_LIMIT');const bytes=Buffer.alloc(s.size+1);let n=0;while(n<bytes.length){const r=await file.read(bytes,n,bytes.length-n,null);if(!r.bytesRead)break;n+=r.bytesRead}need(n===s.size,'UNIFIED_PLAN_CHANGED');return JSON.parse(bytes.subarray(0,n).toString('utf8'))}finally{await file?.close()}}
+/** Local-only operator wrapper; never opens cloud/RPC or accepts keys in arguments. */
+export async function executeUnifiedRecoveryCli({argv,env=process.env,signal}={}){let key,newKey;try{
+ need(Array.isArray(argv)&&['backup','verify','plan','restore','rotate','drill'].includes(argv[0]),'INVALID_UNIFIED_COMMAND');const command=argv[0],args=new Map(),allowed={backup:['--source','--target','--confirm'],verify:['--source','--work-dir'],plan:['--source','--target'],restore:['--source','--target','--plan','--approve','--confirm','--reviewer','--evidence','--services-stopped'],rotate:['--source','--target','--confirm'],drill:['--source','--work-dir','--approve','--confirm','--reviewer','--evidence']}[command];for(let i=1;i<argv.length;i++){const k=argv[i];need(allowed.includes(k)&&!args.has(k),'INVALID_UNIFIED_ARGUMENTS');if(k==='--services-stopped')args.set(k,true);else{need(typeof argv[i+1]==='string'&&!argv[i+1].startsWith('--'),'INVALID_UNIFIED_ARGUMENTS');args.set(k,argv[++i])}}
+ need(typeof env.RIFT_UNIFIED_KEY_ID==='string'&&/^[A-Za-z0-9:_-]{1,64}$/.test(env.RIFT_UNIFIED_KEY_ID),'INVALID_UNIFIED_KEY_ID');
+ if(command==='backup')need(args.get('--confirm')==='CAPTURE COLOCATED RIFT STATE','UNIFIED_BACKUP_CONFIRMATION_REQUIRED');if(command==='rotate')need(args.get('--confirm')==='ROTATE LOCAL RIFT BACKUP','UNIFIED_ROTATION_CONFIRMATION_REQUIRED');
+ let plan;if(command==='restore'){need(args.get('--confirm')==='RESTORE QUARANTINED RIFT COPY'&&args.get('--services-stopped')===true,'UNIFIED_RESTORE_APPROVAL_REQUIRED');plan=await readPlan(args.get('--plan'));need(args.get('--approve')===plan.planHash,'UNIFIED_RESTORE_APPROVAL_REQUIRED')}
+ key=await readUnifiedKey(env.RIFT_UNIFIED_KEY_FILE);const opts={source:args.get('--source'),target:args.get('--target'),key,keyId:env.RIFT_UNIFIED_KEY_ID,signal,workDir:args.get('--work-dir')};let result;
+ if(command==='backup')result=await createUnifiedBackup(opts);
+ if(command==='verify'){const v=await verifyUnifiedBackup(opts);result={verified:true,fileHash:v.fileHash,backupId:v.metadata.backupId,keyId:v.metadata.keyId,summary:v.summary}}
+ if(command==='plan')result=await planUnifiedRestore(opts);
+ if(command==='restore')result=await restoreUnifiedBackup({...opts,plan,approval:{confirm:args.get('--confirm'),commitment:args.get('--approve'),reviewer:args.get('--reviewer'),evidenceHash:args.get('--evidence'),servicesStopped:true}});
+ if(command==='drill')result=await runUnifiedRecoveryDrill({...opts,approval:{confirm:args.get('--confirm'),fileHash:args.get('--approve'),reviewer:args.get('--reviewer'),evidenceHash:args.get('--evidence')}});
+ if(command==='rotate'){need(typeof env.RIFT_UNIFIED_NEW_KEY_ID==='string','INVALID_UNIFIED_KEY_ID');newKey=await readUnifiedKey(env.RIFT_UNIFIED_NEW_KEY_FILE);result=await rotateUnifiedBackup({source:opts.source,target:opts.target,oldKey:key,oldKeyId:opts.keyId,newKey,newKeyId:env.RIFT_UNIFIED_NEW_KEY_ID,signal})}
+ return {exitCode:0,result};
+ }catch(e){const reasonCode=/^[A-Z_]{1,80}$/.test(e?.code||'')?e.code:'UNIFIED_CLI_FAILED';return {exitCode:reasonCode==='UNIFIED_CANCELLED'?130:1,result:{status:'stopped',reasonCode}}}
+ finally{key?.fill(0);newKey?.fill(0)}}

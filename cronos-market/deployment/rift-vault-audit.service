@@ -1,0 +1,38 @@
+[Unit]
+Description=RIFT pinned recovery-vault read-only audit
+Documentation=file:/opt/rift/cronos-market/VAULT-REPLICATION-AND-MONITORING.md
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=rift-vault
+Group=rift-vault
+WorkingDirectory=/opt/rift/cronos-market
+EnvironmentFile=/etc/rift/vault-audit.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/rift/cronos-market/scripts/platform-vault-monitor.js --vault /srv/rift-recovery-vault --vault-id ${RIFT_VAULT_ID} --head ${RIFT_VAULT_HEAD} --work-dir /var/lib/rift-recovery-work --ticks 1 --run-ms 600000 --max-artifacts 256 --max-bytes 1073741824
+Restart=no
+TimeoutStartSec=15min
+TimeoutStopSec=30s
+KillMode=control-group
+UMask=0077
+StateDirectory=rift-recovery-work
+StateDirectoryMode=0700
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictNamespaces=yes
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=yes
+ReadOnlyPaths=/srv/rift-recovery-vault /etc/rift
+ReadWritePaths=/var/lib/rift-recovery-work
+MemoryMax=1G
+TasksMax=64
+StandardOutput=journal
+StandardError=journal

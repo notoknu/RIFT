@@ -1,8 +1,13 @@
+import {ownedPublicDataSelection,ownedCandidates} from '../shared/owned-public-data.js';
+import {readOwnedPublicData} from './owned-public-data.js';
+import {publicDataURL,publicDataSelectionKey} from '../shared/public-data-providers.js';
+import {publicDataFetch} from './public-data-fetch.js';
 import{ByteCache}from'./byte-cache.js';
 // Explorer is a best-effort source, not an authoritative wallet indexer.
 const cache=new ByteCache({maxBytes:16*1024*1024,maxEntries:100}),pending=new Map();
 export async function scanExplorer(address,type,{fetchPage=fetchExplorerPage,maxPages=50,ttl=60000}={}){
- const key=address.toLowerCase()+':'+type;
+ if(ownedPublicDataSelection()){const model=await readOwnedPublicData(),rows=ownedCandidates(model,address,type);return {result:rows,pagination:{totalRecord:rows.length,totalPage:Math.ceil(rows.length/24)},discovery:{unique:rows.length,reported:rows.length,pagesScanned:0,failedPages:[],notes:['Operator-published discovery candidates only; not a complete wallet inventory. Balances must be checked on chain.',...model.coverage.exclusions]}}}
+ const key=publicDataSelectionKey()+':'+address.toLowerCase()+':'+type;
  if(ttl&&cache.get(key)?.until>Date.now())return cache.get(key).data;
  if(ttl&&pending.has(key))return pending.get(key);
  const task=(async()=>{const deadline=Date.now()+25000;const first=await fetchPage(address,type,1),all=[...first.result],reported=Number(first.pagination?.totalRecord||all.length),pages=Math.min(maxPages,Number(first.pagination?.totalPage||1)),failures=[];let next=2;
@@ -13,4 +18,4 @@ export async function scanExplorer(address,type,{fetchPage=fetchExplorerPage,max
  if(ttl){cache.set(key,{until:Date.now()+ttl,data});if(cache.size>100)cache.delete(cache.keys().next().value)}return data;})();
  if(ttl)pending.set(key,task);try{return await task}finally{if(ttl)pending.delete(key)}
 }
-async function fetchExplorerPage(address,type,page){const r=await fetch(`https://explorer.cronos.com/table/${type}?address=${address}&p=${page}&ps=100`,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Explorer unavailable');const reader=r.body.getReader();let size=0,chunks=[];try{while(true){let{done,value}=await reader.read();if(done)break;size+=value.length;if(size>5000000)throw Error('Explorer response too large');chunks.push(value)}}finally{await reader.cancel().catch(()=>{})}let html=Buffer.concat(chunks).toString('utf8'),m=html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s);if(!m)throw Error('Explorer format unavailable');const props=JSON.parse(m[1]).props?.pageProps;if(props?.scope!==type||!Array.isArray(props?.data?.result))throw Error('Explorer format unavailable');return props.data}
+async function fetchExplorerPage(address,type,page){const r=await publicDataFetch(publicDataURL('explorer',type,{address,p:page,ps:100}),{maxBytes:5000000,signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Explorer unavailable');const reader=r.body.getReader();let size=0,chunks=[];try{while(true){let{done,value}=await reader.read();if(done)break;size+=value.length;if(size>5000000)throw Error('Explorer response too large');chunks.push(value)}}finally{await reader.cancel().catch(()=>{})}let html=Buffer.concat(chunks).toString('utf8'),m=html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s);if(!m)throw Error('Explorer format unavailable');const props=JSON.parse(m[1]).props?.pageProps;if(props?.scope!==type||!Array.isArray(props?.data?.result))throw Error('Explorer format unavailable');return props.data}

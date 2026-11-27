@@ -1,0 +1,7 @@
+{
+  "mode": "working-tree",
+  "filesChecked": 532,
+  "findings": [],
+  "licensePresent": false,
+  "limitations": "Heuristic check, not proof of no secrets or valid licensing. Review source/fixtures, rights and Git history independently. No secret contents are logged."
+}

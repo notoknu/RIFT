@@ -1,0 +1,29 @@
+{
+  "scope": "LOCAL SIMULATED CHAIN ONLY",
+  "chainId": "31337",
+  "seller": "0x327fdE9861D306868c1E60D410D47bC7dFED042d",
+  "buyer": "0x7e1b5B81B7ca53c030Cba80cedde405832476995",
+  "privateKeysSaved": false,
+  "realFundsUsed": false,
+  "checks": [
+    "new random wallets",
+    "local balance allocation",
+    "message signature recovery",
+    "mint",
+    "approve",
+    "list",
+    "reject wrong payment",
+    "buy",
+    "ownership transfer",
+    "full-price seller credit",
+    "withdraw",
+    "buyer relist",
+    "cancel"
+  ],
+  "notCovered": [
+    "mainnet RPC acceptance",
+    "mobile wallet UI",
+    "independent security audit",
+    "all feature combinations"
+  ]
+}

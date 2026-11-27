@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "scope": "Desktop Chromium IndexedDB with cloud API unavailable; not Android native SQLite acceptance",
+  "scenarios": [
+    "save without wallet/cloud sign-in",
+    "reload and restore",
+    "backup format",
+    "profile isolation",
+    "49 concurrent serialized saves",
+    "50-draft bound",
+    "atomic overflow refusal",
+    "malformed restore leaves form intact",
+    "responsive widths"
+  ],
+  "pageErrors": []
+}

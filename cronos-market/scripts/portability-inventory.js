@@ -1,0 +1,10 @@
+import {readdir,readFile} from 'node:fs/promises';import {join,relative,resolve} from 'node:path';import {createHash} from 'node:crypto';import {pathToFileURL} from 'node:url';
+/** Static evidence only. Never reads environment values, credentials, private dirs or production data. */
+export async function portabilityInventory(root=resolve(new URL('..',import.meta.url).pathname)){
+ const files=[];async function walk(dir){for(const e of (await readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){if(e.isSymbolicLink())continue;const path=join(dir,e.name);if(e.isDirectory())await walk(path);else if(/\.(?:js|mjs|jsx)$/.test(e.name))files.push(path)}}
+ for(const dir of ['server','edge','shared','src'])await walk(join(root,dir));const modules=[];
+ for(const path of files){const text=await readFile(path,'utf8');const unique=a=>[...new Set(a)].sort();const origins=[];for(const match of text.matchAll(/https?:\/\/[^\s'"`<>\\)\]}]+/g))try{const u=new URL(match[0]);origins.push(u.origin)}catch{}
+ modules.push({path:relative(root,path),sha256:createHash('sha256').update(text).digest('hex'),imports:unique([...text.matchAll(/(?:from\s*|import\s*\(\s*)['"]([^'"]+)['"]/g)].map(x=>x[1])),routeLiterals:unique([...text.matchAll(/['"](\/api(?:\/[^'"\s]*)?)['"]/g)].map(x=>x[1])),environmentIdentifiers:unique([...text.matchAll(/(?:process\.)?env\.([A-Z][A-Z0-9_]*)/g)].map(x=>x[1])),literalUpstreamOrigins:unique(origins),sqliteCoupled:/node:sqlite|DatabaseSync|\.db\.prepare\(/.test(text),d1Coupled:/env\.DB|\.prepare\([^\n]+\)\.bind\(/.test(text)})}
+ return {format:'rift-static-portability-inventory-v1',scope:'Static source inventory of server/edge/shared/src JS-family files. Route strings/imports/env/origins are candidate evidence, not executed feature coverage, mandatory dependency classification, backend parity or provider compatibility certification. Computed routes/imports, bindings and indirect network dependencies require manual review.',files:modules.length,modules};
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)console.log(JSON.stringify(await portabilityInventory(),null,2));

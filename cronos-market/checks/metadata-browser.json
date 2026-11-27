@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scenarios": [
+    "contractURI profile hydrates logo/banner/description independent of registry",
+    "explicit metadata provenance",
+    "venue logo survives profile failure",
+    "no fake hero/token image used as banner"
+  ],
+  "pageErrors": []
+}

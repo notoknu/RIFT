@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "scope": "Desktop Chromium with mocked native transport; not Android consent/Keystore/RPC/WorkManager execution",
+  "scenarios": [
+    "local candidate hint persists in real IndexedDB, sparse uint256 selection triggers no RPC, labels remain inert and removal works",
+    "known balance/NFT reads work with shared HTTP service unavailable via mocked native transport",
+    "bounded contract discovery requires explicit scan, validates sparse candidate page, saves hints with no RPC and supports explicit next/overlap pages through mocked native transport",
+    "embedded contract JSON inspected locally; SVG image reference remains inert text",
+    "raster preview requires separate explicit operation and accepts only bounded PNG data URI, not original remote image URL",
+    "external IPFS JSON requires separate explicit operation; returned image/animation remain inert and no credentials are sent in bridge payload",
+    "historical provenance, native denial without cached success, active cancellation and channel reuse",
+    "hash-pinned saved-hint check requires explicit request, preserves uint256 ID, rejects denied page without zero/partial results and never deletes hints",
+    "persistent-index UI uses explicit local load/start/resume, no-RPC hint copy, source-change block and separately confirmed local deletion; independent browser hints are not silently revoked",
+    "responsive direct-read controls and no endpoint/key/RPC-method payloads",
+    "existing transaction journal reconciles through native receipt adapter without any signing/send method",
+    "direct reads available on public Portfolio route without signing",
+    "unsupported native channel fails visibly"
+  ],
+  "pageErrors": []
+}

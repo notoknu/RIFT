@@ -1,0 +1,29 @@
+[
+  {
+    "id": "A-11",
+    "test": "Saved collection persistence",
+    "result": "PASS: favorite survives browser refresh"
+  },
+  {
+    "id": "A-03",
+    "test": "NFT attributes containing null",
+    "errors": [],
+    "rootEmptied": false,
+    "result": "PASS: malformed traits contained"
+  },
+  {
+    "id": "A-04",
+    "test": "Untrusted drop contract returns storageMode=3",
+    "errors": [],
+    "rootEmptied": false,
+    "result": "PASS: unsupported mode contained"
+  },
+  {
+    "test": "Public order browsing",
+    "result": "PASS: no wallet connection requested"
+  },
+  {
+    "test": "Original pixel builder",
+    "result": "PASS: artwork applies to supplied-SVG mode"
+  }
+]

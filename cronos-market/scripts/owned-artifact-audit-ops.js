@@ -1,0 +1,3 @@
+import {readProductionBytes,requireProduction as need} from '../server/owned-production-config.js';
+import {auditOwnedArtifacts} from '../server/owned-artifact-audit.js';
+try{need(process.argv.length===3,'ARTIFACT_AUDIT_CONFIG_REQUIRED');const policy=JSON.parse(await readProductionBytes(process.argv[2],65536)),report=await auditOwnedArtifacts(policy);console.log(JSON.stringify(report,null,2));if(report.degraded)process.exitCode=2}catch(e){console.error(JSON.stringify({code:/^[A-Z_]{1,90}$/.test(e.code||'')?e.code:'OWNED_ARTIFACT_AUDIT_FAILED',verified:false,activated:false}));process.exitCode=2}

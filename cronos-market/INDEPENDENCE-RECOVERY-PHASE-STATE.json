@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "executionPolicy": {
+    "tests": "authorized-and-run-pass73-clean-listed-local-suites",
+    "builds": "frontend-build-and-local-contract-tests-passed-pass73",
+    "syntaxChecks": "249-javascript-files-passed-pass73",
+    "operationalActivation": "not-authorized",
+    "walletSigning": "user-wallet-only",
+    "historicalMarkdownAndText": "preserve"
+  },
+  "currentPhase": 5,
+  "currentPhaseStatus": "reported-test-failures-resolved-local-verification-remaining-phases-open",
+  "wholeProductComplete": false,
+  "phases": [
+    {
+      "id": 1,
+      "name": "Recovery command admission and file isolation",
+      "status": "source-implemented-unverified",
+      "files": [
+        "server/recovery-workflow-admission.js",
+        "scripts/product-recovery-ops.js"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Current-artifact revalidation for completed cold rebuilds",
+      "status": "source-implemented-unverified",
+      "files": [
+        "server/recovery-artifact-revalidation.js",
+        "server/collection-rebuild.js",
+        "server/marketplace-rebuild.js",
+        "server/wallet-rebuild.js",
+        "server/maintenance-jobs.js",
+        "server/recovery-workflow-admission.js",
+        "scripts/product-recovery-ops.js"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Reviewed cold candidate promotion and rollback tooling",
+      "status": "source-implemented-unverified",
+      "files": [
+        "server/cold-candidate-catalog.js",
+        "scripts/recovery-publication-ops.js",
+        "scripts/product-recovery-ops.js",
+        "package.json",
+        "COLD-CANDIDATE-PUBLICATION-RUNBOOK.md"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Reviewed feature and backend support matrix with remaining repository/provider boundaries",
+      "status": "source-implemented-bounded-scope-unverified",
+      "subphases": [
+        {
+          "id": "4A",
+          "name": "Executable source feature/backend contract and public IPFS gateway boundary",
+          "status": "source-implemented-unverified"
+        },
+        {
+          "id": "4B",
+          "name": "Projection repository boundaries and admitted backend adapters",
+          "status": "source-implemented-bounded-scope-unverified",
+          "files": [
+            "PROJECTION-PUBLICATION-RUNBOOK.md",
+            "PROJECTION-READ-REPOSITORY-RUNBOOK.md",
+            "PROJECTION-SOURCE-ADMISSION-RUNBOOK.md",
+            "package.json",
+            "scripts/projection-publication-ops.js",
+            "server/collection-api.js",
+            "server/exchange-api.js",
+            "server/libsql-projection-read-repository.js",
+            "server/market-api.js",
+            "server/production.js",
+            "server/projection-operational-status.js",
+            "server/projection-publication.js",
+            "server/projection-read-models.js",
+            "server/projection-read-repository.js",
+            "server/sqlite-projection-read-repository.js",
+            "server/status-api.js",
+            "shared/product-support-contract.js",
+            "shared/projection-read-contract.js"
+          ],
+          "scope": "Node SQLite/libSQL read repositories for three APIs, bounded owned publication, hash-pinned operator review/evidence gate, selected-backend timestamp status, drained restart credential lifecycle. Not runtime or production admission.",
+          "retainedExclusions": "Direct remote ingestion/automatic replication, wallet/cold-selector substitution, automatic semantic evidence validation, recurring credential custody/rotation and larger workloads remain excluded/incomplete in broader Phases5\u20138."
+        },
+        {
+          "id": "4C",
+          "name": "Worker route/media contract parity for admitted features",
+          "status": "source-implemented-bounded-scope-unverified",
+          "files": [
+            "edge/projection-read-consistency.js",
+            "edge/exchange.js",
+            "edge/market-sync.js",
+            "edge/worker.js",
+            "edge/public-read-admission.js",
+            "edge/public-upstream.js",
+            "edge/metadata.js",
+            "edge/collections.js",
+            "edge/public-reads.js",
+            "edge/operational-status.js",
+            "shared/public-ipfs-gateways.js",
+            "server/public-ipfs-gateways.js",
+            "shared/release-manifest.js",
+            "server/release-manifest.js",
+            "server/exchange-api.js",
+            "shared/product-support-contract.js",
+            "WORKER-READ-MEDIA-PARITY-RUNBOOK.md"
+          ],
+          "scope": "Worker/D1 common projection detail/list/activity envelopes, cooperative state-bracketed reads, shared configurable gateway grammar, preflight sanitization, release observations, bounded D1 status and read admission.",
+          "retainedExclusions": "Collection fallback/discovery and portfolio remain partial; ingestion/acquisition/maintenance throughput, configuration caps, RPC completeness, metadata/host policies and full lifecycle parity remain distinct or incomplete in broader phases."
+        },
+        {
+          "id": "4D",
+          "name": "Remaining venue/explorer/snapshot provider boundaries",
+          "status": "source-implemented-bounded-scope-unverified",
+          "files": [
+            "OWNED-PUBLIC-DATA-RUNBOOK.md",
+            "PUBLIC-DATA-PROVIDER-BOUNDARY-RUNBOOK.md",
+            "edge/catalog.js",
+            "edge/operational-status.js",
+            "edge/owned-public-data.js",
+            "edge/public-reads.js",
+            "edge/public-upstream.js",
+            "package.json",
+            "scripts/owned-public-data-ops.js",
+            "scripts/product-support-ops.js",
+            "server/catalog.js",
+            "server/crosscheck.js",
+            "server/discovery.js",
+            "server/images.js",
+            "server/owned-public-data.js",
+            "server/portfolio.js",
+            "server/projection-operational-status.js",
+            "server/public-data-fetch.js",
+            "server/public-data-snapshot.js",
+            "server/rankings.js",
+            "server/search.js",
+            "server/venue-snapshot.js",
+            "shared/owned-public-data.js",
+            "shared/product-support-contract.js",
+            "shared/public-data-providers.js"
+          ],
+          "scope": "Compatible protocol selectors/source-scoped snapshots plus explicit hash-pinned owned normalized dataset alternative for directory/search/observations/wallet candidates on Node and Worker. No external fallback; independent crosscheck explicitly excluded in owned mode.",
+          "retainedExclusions": "Automatic independently acquired complete history/holdings/statistics, complete whole-network rankings, recurring data publication and universal cross-provider semantic verification remain incomplete in Phases5\u20138."
+        }
+      ],
+      "nextAction": "Begin Phase5 owned holdings/accounting/statistics production and end-to-end rebuild/reconciliation integration; no automatic activation."
+    },
+    {
+      "id": 5,
+      "name": "Complete admitted holdings, accounting and historical rebuild projections",
+      "status": "in-progress-integrated-source-unverified",
+      "implemented": [
+        "Accepted collection projection image to owned normalized dataset producer",
+        "Common checkpoint and token/balance/supply reconciliation",
+        "Bounded evidence-pinned private artifact CLI; no activation",
+        "Completed collection rebuild to paired captured-image lineage, authoritative digest checks and receipt-last artifacts",
+        "Optional reviewed lineage in owned production evidence; read-only capture and production restart inspection",
+        "Accepted RIFT v2 exchange event replay with exact persisted-order reconciliation and gross native-CRO accounting",
+        "Optional common-checkpoint exchange accounting in owned dataset production with pinned bounded evidence and conservative expiry",
+        "Reviewed acceptance-pinned event/checkpoint timestamp samples for exchange accounting",
+        "Optional checkpoint-anchored24h/7d gross CRO and fill-event totals, with conservative expiry and historical coverage labels",
+        "Timestamp-aware header quorum with unchanged ordinary checkpoint result shape",
+        "Resumable immutable per-block timestamp acquisition, pinned plans and compatible receipt-last evidence finalization",
+        "Read-only timestamp artifact inspection and maintenance job/runtime/finite runner integration; completion awaits source review",
+        "Completed paired marketplace rebuild to read-only captured image/digest lineage for legacy/exchange-v2",
+        "Optional exact marketplace captured-image lineage in exchange accounting, pinned production evidence and receipt",
+        "Private receipt-last marketplace capture and reviewed manifest/receipt inspection CLI",
+        "Accepted legacy event/order replay and exact persisted-row reconciliation with gross native-CRO purchase totals",
+        "Mutually exclusive legacy/v2 accounting selection in owned producer/CLI with explicit missing-schema limits and optional marketplace lineage",
+        "Multi-collection paired-capture lineage fan-in with exact full coverage",
+        "Shared private pinned production loader and deterministic resumable intent workflow",
+        "Completed paired wallet rebuild to bounded public20/721/1155 discovery artifacts and owned production candidate merge",
+        "Optional historical selected-collection custody and RIFT listing escrow beneficiary accounting with exact vault obligation reconciliation"
+      ],
+      "files": [
+        "ALL-REMAINING-PACKAGES-PASS-RUNBOOK.md",
+        "EXCHANGE-TIME-ACQUISITION-RUNBOOK.md",
+        "EXCHANGE-TIME-EVIDENCE-RUNBOOK.md",
+        "INTEGRATED-PRODUCTION-WORKFLOW-RUNBOOK.md",
+        "MARKETPLACE-PRODUCTION-LINEAGE-RUNBOOK.md",
+        "OWNED-EXCHANGE-ACCOUNTING-RUNBOOK.md",
+        "OWNED-LEGACY-ACCOUNTING-RUNBOOK.md",
+        "OWNED-PROJECTION-PRODUCTION-RUNBOOK.md",
+        "REBUILD-PRODUCTION-LINEAGE-RUNBOOK.md",
+        "WALLET-DISCOVERY-PUBLICATION-RUNBOOK.md",
+        "package.json",
+        "scripts/exchange-time-acquisition-ops.js",
+        "scripts/maintenance-ops.js",
+        "scripts/marketplace-production-lineage-ops.js",
+        "scripts/owned-artifact-audit-ops.js",
+        "scripts/owned-projection-production-ops.js",
+        "scripts/rebuild-production-lineage-ops.js",
+        "scripts/wallet-discovery-publication-ops.js",
+        "server/chain-event-quorum.js",
+        "server/chain-read-config.js",
+        "server/chain-read-quorum.js",
+        "server/collection-index.js",
+        "server/complete-block-events.js",
+        "server/exchange-time-acquisition-inspection.js",
+        "server/exchange-time-acquisition-unit.js",
+        "server/exchange-time-acquisition.js",
+        "server/exchange-time-evidence.js",
+        "server/index-store.js",
+        "server/index-worker.js",
+        "server/maintenance-jobs.js",
+        "server/maintenance-runner.js",
+        "server/marketplace-production-lineage.js",
+        "server/owned-artifact-audit.js",
+        "server/owned-exchange-accounting.js",
+        "server/owned-holdings-accounting.js",
+        "server/owned-legacy-accounting.js",
+        "server/owned-production-config.js",
+        "server/owned-production-unit.js",
+        "server/owned-production-workflow.js",
+        "server/owned-projection-producer.js",
+        "server/rebuild-production-lineage.js",
+        "server/wallet-block-receipts.js",
+        "server/wallet-discovery-publication-ops.js",
+        "server/wallet-discovery-publication.js",
+        "shared/receipt-backfill.js"
+      ],
+      "remaining": [
+        "Durable reviewed rebuild-to-production workflow progression and multi-source lineage fan-in",
+        "Complete applicable holdings/ERC20/escrow/staking/bridge semantics and reconciliation",
+        "Richer acquisition/schema for absent legacy buyer/time/hash economics; net accounting remains unimplemented",
+        "Recurring production/publication integration and bounded-image scaling"
+      ],
+      "nextAction": "Continue remaining coverage/acquisition/lifecycle/integration engineering by dependency without phase permission gates; no completion or runtime verification claim."
+    },
+    {
+      "id": 6,
+      "name": "Acquisition completeness and resource-bounded density extensions",
+      "status": "in-progress-integrated-source-unverified",
+      "implemented": [
+        "Receipt transaction-list stability, all-log validation and carried index/byte progress in admitted paths",
+        "Bounded wallet event decoding/expansion before row append, strict malformed-log and ids/values checks",
+        "Explicit opt-in256..2048 wallet/generic complete-block transaction budgets with matching primary/quorum/gate propagation; stricter platform proof profiles retained"
+      ],
+      "nextAction": "Continue remaining coverage/acquisition/lifecycle/integration engineering by dependency without phase permission gates; no completion or runtime verification claim."
+    },
+    {
+      "id": 7,
+      "name": "Unattended recovery evidence, credential, capacity and metadata lifecycle",
+      "status": "in-progress-integrated-source-unverified",
+      "implemented": [
+        "Finite owned-data-production maintenance lane, receipt-last resume, directory fsync and point-in-time headroom admission",
+        "Wallet publication capture/inspection/reuse, fsync/headroom and maintenance job/runtime integration",
+        "Pinned artifact expiry/evidence/intent/free-space audit and recurring non-destructive finite maintenance lane"
+      ],
+      "nextAction": "Continue remaining coverage/acquisition/lifecycle/integration engineering by dependency without phase permission gates; no completion or runtime verification claim."
+    },
+    {
+      "id": 8,
+      "name": "Remaining source integration, compatibility and defect closure",
+      "status": "in-progress-integrated-source-unverified",
+      "implemented": [
+        "Shared CLI/maintenance production loading, stable quorum error codes and deterministic array ordering",
+        "Canonical wallet-store checkpoint/token/address admission and positional ABI batch-array decoding",
+        "Scheduler/config integration for holdings/audits/density and sanitized enrollment request/provider-policy digests without inspect-time RPC construction"
+      ],
+      "nextAction": "Continue remaining coverage/acquisition/lifecycle/integration engineering by dependency without phase permission gates; no completion or runtime verification claim."
+    }
+  ],
+  "verificationStatus": "No runtime correctness, production readiness or universal real-world coverage claim. Execution verification remains deferred under the no-testing instruction.",
+  "knownBacklog": "/home/user/RIFT-deliverables/47-REMAINING-ASSISTANT-IMPLEMENTATION-BACKLOG.md",
+  "remainingAccounting": {
+    "openTopLevelPhases": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "openWorkPackages": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "engineeringCompletionPercentage": null,
+    "reason": "Unequal bounded source scopes, substantial remaining automation/accounting/acquisition/lifecycle work and deferred verification; no validated percentage."
+  },
+  "nextPhase": 5,
+  "workPolicy": {
+    "phasePermissionGate": false,
+    "reporting": "brief",
+    "execution": "no-tests-builds-syntax-checks-per-standing-instruction",
+    "activation": "not-authorized",
+    "scope": "Work across remaining packages by dependency without declaring all complete"
+  },
+  "lastIntegratedPass": {
+    "continuation": 71,
+    "packagesAddressed": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "allPackagesComplete": false,
+    "verified": false,
+    "activated": false,
+    "scope": "Bounded end-to-end source tracing, replay and artifact semantic fixes, acquisition durability; no execution"
+  },
+  "latestTestPass": {
+    "pass": 73,
+    "engineering": {
+      "passed": 1133,
+      "failed": 0,
+      "skipped": 0
+    },
+    "implementation": {
+      "passed": 6,
+      "failed": 0
+    },
+    "security": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "realDisposableRedis": true
+    },
+    "localContract": {
+      "passed": 64,
+      "failed": 0
+    },
+    "syntax": {
+      "files": 249,
+      "failed": 0
+    },
+    "frontendBuild": "passed-with-nonfatal-chunk-warning",
+    "cleanPass": true,
+    "scope": "Listed local suites only; browser/device/hosted acceptance not run; remaining phases open",
+    "report": "/home/user/RIFT-deliverables/73-TEST-FAILURES-RESOLVED.md"
+  },
+  "latestHandoff": {
+    "pass": 74,
+    "source": "git-safe-development-snapshot",
+    "android": "fresh-debug-apk-built-and-signature-verified",
+    "androidVersionCode": 28,
+    "androidJvmTests": 42,
+    "androidLint": {
+      "errors": 0,
+      "warnings": 8
+    },
+    "deviceRuntimeVerified": false,
+    "activated": false
+  }
+}

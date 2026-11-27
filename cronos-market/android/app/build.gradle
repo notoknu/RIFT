@@ -9,8 +9,8 @@ android {
         minSdk 26
         targetSdk 35
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        versionCode 30
-        versionName '0.28.0-wallet-pairing-preview'
+        versionCode 28
+        versionName '0.26.0-comparison-resilience-preview'
         buildConfigField 'String', 'RIFT_ORIGIN', '"' + endpoint + '"'
     }
     buildFeatures { buildConfig true }

@@ -1,9 +1,13 @@
+import {ownedPublicDataSelection,ownedVenue} from '../shared/owned-public-data.js';
+import {readOwnedPublicData} from './owned-public-data.js';
+import {publicDataURL,publicDataSelectionKey,requirePublicDataProviders} from '../shared/public-data-providers.js';
+import {publicDataFetch} from './public-data-fetch.js';
 import {isAddress} from 'ethers';
 import {boundedBytes} from '../shared/creator-service.js';
 import {validateVenueResponse,validateNormalizedVenueSnapshot} from '../shared/venue-snapshot.js';
-export async function fetchVenueSnapshot(address,{fetcher=globalThis.fetch}={}){
+export async function fetchVenueSnapshot(address,{fetcher=publicDataFetch,env=process.env}={}){
  if(!isAddress(address||''))throw Error('Invalid address');
- const url=new URL('https://api.wolfswap.gg/factions/ebisus/collections-ranked');url.search=new URLSearchParams({chain:'25',addresses:address,limit:'1'});
+ const url=publicDataURL('ebisu','ranked',{},env);url.search=new URLSearchParams({chain:'25',addresses:address,limit:'1'});
  const response=await fetcher(url,{redirect:'error',credentials:'omit',signal:AbortSignal.timeout(10000)});if(!response.ok)throw Error('Venue unavailable');return validateVenueResponse(JSON.parse(new TextDecoder().decode(await boundedBytes(response,1048576))),address);
 }
 // In-memory, per process. LRU eviction bounds both positive and negative cache records.
@@ -40,4 +44,4 @@ export function createVenueReader({read=fetchVenueSnapshot,now=Date.now,random=M
   },
  };
 }
-export function venueSnapshotPlugin(options={}){const reader=createVenueReader(options);return {name:'collection-venue-snapshot',configureServer(server){server.middlewares.use('/api/v1/collection-market',async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');if(req.method!=='GET'){res.statusCode=405;return res.end(JSON.stringify({error:'GET required'}));}const address=new URL(req.url,'http://internal').searchParams.get('address');if(!isAddress(address||'')){res.statusCode=400;return res.end(JSON.stringify({error:'Invalid address'}));}try{res.end(JSON.stringify(await reader.get(address)));}catch(error){res.statusCode=error.code==='busy'?429:503;if(error.retryAfterMs>0)res.setHeader('Retry-After',String(Math.ceil(error.retryAfterMs/1000)));res.end(JSON.stringify({error:error.code==='busy'?'Venue reads busy':'Venue statistics unavailable or cooling down; no substitute totals'}));}});}};}
+export function venueSnapshotPlugin(options={}){const env=options.env||process.env,selected=publicDataSelectionKey(env),reader=createVenueReader({...options,read:options.read||((address)=>fetchVenueSnapshot(address,{env}))});return {name:'collection-venue-snapshot',configureServer(server){server.middlewares.use('/api/v1/collection-market',async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');if(req.method!=='GET'){res.statusCode=405;return res.end(JSON.stringify({error:'GET required'}));}const address=new URL(req.url,'http://internal').searchParams.get('address');if(!isAddress(address||'')){res.statusCode=400;return res.end(JSON.stringify({error:'Invalid address'}));}try{if(!options.read&&ownedPublicDataSelection(env))return res.end(JSON.stringify(ownedVenue(await readOwnedPublicData(env),address)));if(!options.read){requirePublicDataProviders(['ebisu'],env);if(publicDataSelectionKey(env)!==selected)throw Error('Provider restart required')}res.end(JSON.stringify(await reader.get(address)));}catch(error){res.statusCode=error.code==='busy'?429:503;if(error.retryAfterMs>0)res.setHeader('Retry-After',String(Math.ceil(error.retryAfterMs/1000)));res.end(JSON.stringify({error:error.code==='busy'?'Venue reads busy':'Venue statistics unavailable or cooling down; no substitute totals'}));}});}};}

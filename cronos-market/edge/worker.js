@@ -1,3 +1,6 @@
+import {buildReleaseManifest} from '../shared/release-manifest.js';
+import {edgePublicReadAdmission} from './public-read-admission.js';
+import {creatorUploadConfig} from '../shared/creator-upload-config.js';
 import {creatorCrossOrigin} from '../shared/creator-cors.js';
 import {frontendResponse} from './frontend.js';
 import {syncEdgeCollection,hydrateEdgeCollection,collectionConfigs} from './collections.js';
@@ -15,19 +18,21 @@ const validSignature=new Interface(['function isValidSignature(bytes32,bytes) vi
 async function handle(request,env){
   const url=new URL(request.url);
   if(url.pathname==='/healthz')return Response.json({status:'ok',chainId:25,runtime:'worker',scope:'creator, legacy/v2 D1 exchange, bounded discovery/media/portfolio and deployment-scoped collection reads; hosted acceptance pending'});
+  if(url.pathname==='/api/v1/release'){const headers={'Cache-Control':'no-store','Content-Type':'application/json','Allow':'GET, HEAD'};if(!['GET','HEAD'].includes(request.method))return Response.json({error:'Method not allowed'},{status:405,headers});let uploadConfigured=false;try{uploadConfigured=creatorUploadConfig(env).enabled}catch{}const value=buildReleaseManifest(env,{storageConfigured:!!env.DB,uploadConfigured,runtime:'worker'});return new Response(request.method==='HEAD'?null:JSON.stringify(value),{headers})}
   if(!env.DB||!env.PUBLIC_ORIGIN)return Response.json({error:'Creator Worker requires D1 and exact PUBLIC_ORIGIN configuration'},{status:503});
-  if(url.pathname.startsWith('/api/v1/exchange/')){try{return await edgeExchange(request,env)}catch{return Response.json({error:'Exchange D1 unavailable or unmigrated'},{status:503})}}
+  if((url.pathname==='/api/v1/exchange'||url.pathname.startsWith('/api/v1/exchange/'))){try{if(request.method==='GET'){const denied=await edgePublicReadAdmission(request,env);if(denied)return denied}return await edgeExchange(request,env)}catch{return Response.json({error:'Exchange D1 unavailable or unmigrated'},{status:503})}}
   try{const publicResult=await publicReadAPI(request,env);if(publicResult)return publicResult}catch{return Response.json({error:'Public read service unavailable or unmigrated'},{status:503})}
   // D1 is migrated out of band, never during an untrusted HTTP request.
-  if(url.pathname==='/api/v1/listings'&&request.method==='GET'){try{return await edgeListings(env.DB,url,{address:env.MARKETPLACE_ADDRESS,startBlock:env.MARKET_START_BLOCK})}catch{return Response.json({error:'Market database unavailable or unmigrated'},{status:503})}}
+  if(url.pathname==='/api/v1/listings'||url.pathname.startsWith('/api/v1/listings/')){if(request.method!=='GET')return Response.json({error:'GET required'},{status:405});try{const denied=await edgePublicReadAdmission(request,env);if(denied)return denied;return await edgeListings(env.DB,url,{address:env.MARKETPLACE_ADDRESS,startBlock:env.MARKET_START_BLOCK})}catch{return Response.json({error:'Market database unavailable or unmigrated'},{status:503})}}
   const chain={verify1271:async(wallet,hash,signature)=>{
    const rpc=(method,params)=>edgeRPC(env,method,params);
    if(await rpc('eth_chainId',[])!=='0x19')throw Error('Wrong chain');
    const code=await rpc('eth_getCode',[wallet,'latest']);if(code==='0x')return false;
    try{const result=await rpc('eth_call',[{to:wallet,data:validSignature.encodeFunctionData('isValidSignature',[hash,signature])},'latest']);return validSignature.decodeFunctionResult('isValidSignature',result)[0]==='0x1626ba7e'}catch{return false}
-  },register:env.DROP_FACTORY_ADDRESS&&env.DROP_FACTORY_RUNTIME_HASH?async(tx,wallet)=>{const rpc=(method,params)=>edgeRPC(env,method,params);if(await rpc('eth_chainId',[])!=='0x19')throw Error('Wrong chain');return verifyFactoryDeployment({rpc,readMetadata:edgeMetadata,factory:env.DROP_FACTORY_ADDRESS,runtimeHash:env.DROP_FACTORY_RUNTIME_HASH},tx,wallet)}:undefined};
+  },register:env.DROP_FACTORY_ADDRESS&&env.DROP_FACTORY_RUNTIME_HASH?async(tx,wallet)=>{const rpc=(method,params)=>edgeRPC(env,method,params);if(await rpc('eth_chainId',[])!=='0x19')throw Error('Wrong chain');return verifyFactoryDeployment({rpc,readMetadata:uri=>edgeMetadata(uri,env),factory:env.DROP_FACTORY_ADDRESS,runtimeHash:env.DROP_FACTORY_RUNTIME_HASH},tx,wallet)}:undefined};
   try{
-  const service=createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db:env.DB,origin:env.PUBLIC_ORIGIN,chain,uploadProvider:pinataProvider(env.PINATA_JWT),uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0)});
+  const pinConfig=creatorUploadConfig(env),uploadProvider=pinConfig.enabled?pinataProvider(pinConfig.token,{endpoint:pinConfig.url}):undefined;if(uploadProvider)Object.defineProperty(uploadProvider,'providerLabel',{value:pinConfig.label});
+   const service=createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db:env.DB,origin:env.PUBLIC_ORIGIN,chain,uploadProvider,uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0)});
    // Use one D1 atomic bucket for account mutations; no process-local security state.
    if(request.method!=='GET'){
     // Origin validated before spending DB writes, and IP cannot be supplied in JSON.

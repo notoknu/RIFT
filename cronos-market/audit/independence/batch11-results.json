@@ -1,0 +1,75 @@
+{
+  "batch": 11,
+  "scope": "Explicit finite persisted-stage worker with automatic discovery/resume and next-block admission; no deployed jobs/production integration",
+  "verification": {
+    "engineering": 600,
+    "new_stage_worker_tests": 17,
+    "focused_exchange_integration": 199,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "changes": [
+    "Bounded unresolved-stage discovery with checksum validation, no schema drift",
+    "Next-block admission/resume and at-most-one complete block publication per finite invocation",
+    "Shared RPC budget, deadline/cancellation, safe-step lease renewal and resource cleanup",
+    "Journal and orphan publishing/held-stage gates prevent automatic replay",
+    "Sanitized compact last-observed progress result"
+  ],
+  "limits": [
+    "Explicit callable worker, not ordinary range scanner dispatch, daemon, durable jobs or production selection",
+    "Existing4096transaction/8192log/2MiBraw/512matchingevent and final repository limits unchanged",
+    "Unresolved stage marker resolution and stage archive/rotation remain open",
+    "Single-provider observations, not independent completeness or hosted durability proof"
+  ],
+  "remaining_assistant": [
+    "Automatic range-to-stage dispatch and durable jobs/fairness/backoff/supervision",
+    "Larger event-dense block strategy",
+    "Stage/nonmatching intent resolution, audit/archive rotation and secure journal/stage-aware off-host backup",
+    "Hosted acceptance automation, authoritative API/worker cutover and rollback",
+    "Independent acquisition/live Cronos compatibility, collection/wallet/stats/projections/dependency removal/public API/SDK",
+    "Creator/security/device acceptance preparation"
+  ],
+  "owner": [
+    "Physical dedicated locked-device participation when artifacts ready",
+    "License/official-platform rights decision",
+    "Exact consequential reviewed release/migration/signing/spend approvals under standing limits",
+    "Specific owner-only settings only if automation cannot; no secrets or immediate action requested"
+  ],
+  "joint_external": [
+    "Designated disposable hosted migration/consistency/transaction/restart/restore acceptance",
+    "Independent security review and reviewed activation",
+    "Actual Android/native-wallet acceptance"
+  ],
+  "activation": {
+    "hosted_probes": false,
+    "hosted_db_writes": false,
+    "migration": false,
+    "deployment": false,
+    "production_selection_change": false,
+    "spend": false,
+    "paid_provisioning": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "verification_notes": [
+    "Fresh snapshot lacked dependencies/tools. Restored npm dependencies, Node22, JDK17, native EDR0.25.1 binding, Redis and Chromium/system libraries. package-lock unchanged.",
+    "Initial engineering run598/600 with default JDK11; rerun with JDK17 passed600/600 and6implementation.",
+    "Combined runner then stopped at missing optional EDR. After restoring exact binding,64contracts and build passed; browser initially lacked system libraries.",
+    "After restoring Chromium dependencies, complete controlled browser suite and11Android checks passed. No failed check is being counted as a pass without rerun."
+  ],
+  "evidence": {
+    "focused": "platform-batch11-focused.log",
+    "new_tests": "platform-batch11-stage-cycle-final.log",
+    "engineering_implementation": "independence-batch11-final-regression.log",
+    "contracts_build": "independence-batch11-release-final.log",
+    "browser_android": "independence-batch11-browser-android.log",
+    "security": "independence-batch11-security.log",
+    "initial_environment_failure": "independence-batch11-regression.log"
+  },
+  "runbook": "STAGE-WORKER-RUNBOOK.md"
+}

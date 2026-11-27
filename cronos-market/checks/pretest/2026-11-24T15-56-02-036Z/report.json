@@ -1,0 +1,90 @@
+{
+  "startedAt": "2026-11-24T15:56:02.037Z",
+  "scope": "Local pre-release validation; no deployment, wallet loading, mainnet writes or paid resources",
+  "status": "local-suite-passed",
+  "durationHoursRequested": 12,
+  "twelveHourSoakCompleted": false,
+  "steps": [
+    {
+      "name": "contract-export",
+      "startedAt": "2026-11-24T15:56:02.038Z",
+      "status": "passed",
+      "log": "contract-export.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:56:03.762Z"
+    },
+    {
+      "name": "contracts",
+      "startedAt": "2026-11-24T15:56:03.763Z",
+      "status": "passed",
+      "log": "contracts.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:56:07.070Z"
+    },
+    {
+      "name": "frontend-build",
+      "startedAt": "2026-11-24T15:56:07.071Z",
+      "status": "passed",
+      "log": "frontend-build.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:56:15.524Z"
+    },
+    {
+      "name": "engineering",
+      "startedAt": "2026-11-24T15:56:15.527Z",
+      "status": "passed",
+      "log": "engineering.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:16.474Z"
+    },
+    {
+      "name": "implementation",
+      "startedAt": "2026-11-24T15:57:16.475Z",
+      "status": "passed",
+      "log": "implementation.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:16.895Z"
+    },
+    {
+      "name": "browser",
+      "startedAt": "2026-11-24T15:57:16.896Z",
+      "status": "passed",
+      "log": "browser.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:51.283Z"
+    },
+    {
+      "name": "worker-browser",
+      "startedAt": "2026-11-24T15:57:51.283Z",
+      "status": "passed",
+      "log": "worker-browser.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:54.026Z"
+    },
+    {
+      "name": "split-auth",
+      "startedAt": "2026-11-24T15:57:54.027Z",
+      "status": "passed",
+      "log": "split-auth.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:56.995Z"
+    },
+    {
+      "name": "source-audit",
+      "startedAt": "2026-11-24T15:57:56.995Z",
+      "status": "passed",
+      "log": "source-audit.log",
+      "exitCode": 0,
+      "finishedAt": "2026-11-24T15:57:57.365Z"
+    }
+  ],
+  "externalGates": [
+    "Render persistent disk/redeploy/restore",
+    "External pin provider credentials/quotas and retrieval",
+    "External marketplace acceptance",
+    "Physical Android wallet pairing",
+    "Independent security review"
+  ],
+  "finishedAt": "2026-11-24T15:57:57.366Z",
+  "elapsedSeconds": 115
+}

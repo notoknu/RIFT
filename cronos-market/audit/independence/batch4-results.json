@@ -1,0 +1,51 @@
+{
+  "batch": 4,
+  "scope": "Source-only RPC acquisition hardening, not production wiring",
+  "changes": [
+    "Complete linked headers for bounded range, including empty blocks",
+    "Four-way maximum header concurrency",
+    "Read-only RPC adapter: per-call deadline, call budget, AbortSignal and sanitized fail-stop behavior",
+    "Pre-publication cancellation gate; publication not raced after invocation"
+  ],
+  "verification": {
+    "engineering_passed": 461,
+    "new_rpc_ancestry_tests": 12,
+    "focused_repository_query_sync_rpc_passed": 60,
+    "security_real_isolated_redis_passed": 7,
+    "simulated_contract_tests_passed": 64,
+    "implementation_passed": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_local_shell_artifact_tooling_passed": 11
+  },
+  "limitations": [
+    "One provider; no independent consensus or log-completeness proof",
+    "Per-call deadline and step call budget, not aggregate deadline or guaranteed HTTP abort",
+    "Cancellation after publication starts can still return successful commit",
+    "No automated fresh-session ambiguous-commit reconciliation",
+    "Dense-block receipts and adaptive scheduling remain unimplemented"
+  ],
+  "activation": {
+    "production_wiring": false,
+    "cloud_writes": false,
+    "hosted_probes": false,
+    "deployment": false,
+    "spend": false,
+    "trading_activation": false,
+    "native_signing_approval": false,
+    "new_apk": false
+  },
+  "remaining": [
+    "Log completeness and dense-block receipt strategy",
+    "Adaptive scheduling and transport/aggregate deadline integration",
+    "Fresh-session uncertain-commit reconciliation",
+    "Disposable hosted migration, limits, restart and independent restore acceptance",
+    "Reviewed authoritative worker/API selection",
+    "Collection/wallet jobs and remaining platform, contract, device and licensing gates"
+  ],
+  "evidence": [
+    "platform-batch4-focused.log",
+    "independence-batch4-regression.log",
+    "independence-batch4-security.log"
+  ]
+}

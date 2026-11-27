@@ -1,0 +1,47 @@
+{
+  "type": "web_service",
+  "name": "RIFT",
+  "ownerId": "tea-dc2lhnui0phs73b7mpg0",
+  "environmentId": "evm-dc2liqu7bikc73921cg0",
+  "repo": "https://github.com/notoknu/RIFT",
+  "branch": "main",
+  "rootDir": "cronos-market",
+  "autoDeployTrigger": "off",
+  "envVars": [
+    {
+      "key": "NODE_VERSION",
+      "value": "22.16.0"
+    },
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "ALLOW_SINGLE_PROCESS_LIMITS",
+      "value": "1"
+    },
+    {
+      "key": "INDEXER_ENABLED",
+      "value": "0"
+    },
+    {
+      "key": "PUBLIC_ORIGIN",
+      "value": ""
+    },
+    {
+      "key": "EXCHANGE_TRADING_ENABLED",
+      "value": "0"
+    }
+  ],
+  "serviceDetails": {
+    "env": "node",
+    "envSpecificDetails": {
+      "buildCommand": "node -e 'const f=require('\"'\"'fs'\"'\"');f.mkdirSync('\"'\"'deployment'\"'\"',{recursive:true});f.writeFileSync(\"deployment/public-cors.mjs\",Buffer.from(\"Ly8gU3BsaXQtaG9zdCBwcmV2aWV3OiBwdWJsaWMgR0VUcyBvbmx5LiBEb2VzIG5vdCBlbmFibGUgY29va2llIGF1dGggb3IgY3Jvc3Mtb3JpZ2luIHdyaXRlcy4KZXhwb3J0IGZ1bmN0aW9uIHB1YmxpY1JlYWRDb3JzKG9yaWdpbil7Y29uc3QgdT1uZXcgVVJMKG9yaWdpbik7aWYodS5vcmlnaW4hPT1vcmlnaW58fHUucHJvdG9jb2whPT0naHR0cHM6J3x8dS51c2VybmFtZXx8dS5wYXNzd29yZCl0aHJvdyBFcnJvcignRXhhY3QgSFRUUFMgZnJvbnRlbmQgb3JpZ2luIHJlcXVpcmVkJyk7cmV0dXJuKHJlcSxyZXMsbmV4dCk9PntpZihyZXEuaGVhZGVycy5vcmlnaW4hPT1vcmlnaW4pcmV0dXJuIG5leHQoKTtjb25zdCBwYXRoPXJlcS5wYXRofHxyZXEudXJsLnNwbGl0KCc/JylbMF07aWYocGF0aCE9PScvaGVhbHRoeicmJiFwYXRoLnN0YXJ0c1dpdGgoJy9hcGkvJykpcmV0dXJuIG5leHQoKTtyZXMudmFyeSgnT3JpZ2luJyk7aWYocmVxLm1ldGhvZD09PSdPUFRJT05TJyl7Y29uc3QgbWV0aG9kPXJlcS5oZWFkZXJzWydhY2Nlc3MtY29udHJvbC1yZXF1ZXN0LW1ldGhvZCddO2lmKCFbJ0dFVCcsJ0hFQUQnXS5pbmNsdWRlcyhtZXRob2QpKXJldHVybiByZXMuc3RhdHVzKDQwMykuZW5kKCk7cmVzLnNldEhlYWRlcignQWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luJyxvcmlnaW4pO3Jlcy5zZXRIZWFkZXIoJ0FjY2Vzcy1Db250cm9sLUFsbG93LU1ldGhvZHMnLCdHRVQsIEhFQUQnKTtyZXMuc2V0SGVhZGVyKCdBY2Nlc3MtQ29udHJvbC1BbGxvdy1IZWFkZXJzJywnQWNjZXB0Jyk7cmV0dXJuIHJlcy5zdGF0dXMoMjA0KS5lbmQoKTt9aWYoIVsnR0VUJywnSEVBRCddLmluY2x1ZGVzKHJlcS5tZXRob2QpKXJldHVybiByZXMuc3RhdHVzKDQwMykuanNvbih7ZXJyb3I6J0Nyb3NzLW9yaWdpbiB3cml0ZXMgZGlzYWJsZWQ7IHVzZSByZXZpZXdlZCBzYW1lLW9yaWdpbiBkZXBsb3ltZW50Lid9KTtyZXMuc2V0SGVhZGVyKCdBY2Nlc3MtQ29udHJvbC1BbGxvdy1PcmlnaW4nLG9yaWdpbik7bmV4dCgpO307fQo=\",'\"'\"'base64'\"'\"'));f.writeFileSync(\"deployment/apply-render-preview.mjs\",Buffer.from(\"aW1wb3J0IHtyZWFkRmlsZSx3cml0ZUZpbGV9IGZyb20gJ25vZGU6ZnMvcHJvbWlzZXMnO2ltcG9ydCB7Y3JlYXRlSGFzaH0gZnJvbSAnbm9kZTpjcnlwdG8nOwpjb25zdCBmaWxlPSdzZXJ2ZXIvcHJvZHVjdGlvbi5qcycsc291cmNlPWF3YWl0IHJlYWRGaWxlKGZpbGUsJ3V0ZjgnKTsKaWYoY3JlYXRlSGFzaCgnc2hhMjU2JykudXBkYXRlKHNvdXJjZSkuZGlnZXN0KCdoZXgnKSE9PScwZDQ3NTlhYmIyZjNmM2IzMTFkZjVjZDYwOWNkZjA0YjIxNTdiOWIwN2E2OTdmN2E0ZjdmNjRiODEyMzFhNmZkJyl0aHJvdyBFcnJvcignUmVwb3NpdG9yeSBzZXJ2ZXIgY2hhbmdlZDsgcmV2aWV3IGFuZCByZWdlbmVyYXRlIGRlcGxveW1lbnQgcGF0Y2guJyk7CmNvbnN0IGFuY2hvcj0iY29uc3QgYXBwPWV4cHJlc3MoKTthcHAuZGlzYWJsZSgneC1wb3dlcmVkLWJ5Jyk7IjsKaWYoIXNvdXJjZS5pbmNsdWRlcyhhbmNob3IpKXRocm93IEVycm9yKCdNaXNzaW5nIHNlcnZlciBhbmNob3InKTsKY29uc3QgY29ycz1hd2FpdCByZWFkRmlsZSgnZGVwbG95bWVudC9wdWJsaWMtY29ycy5tanMnLCd1dGY4Jyk7YXdhaXQgd3JpdGVGaWxlKCdzZXJ2ZXIvcHVibGljLWNvcnMubWpzJyxjb3JzKTsKYXdhaXQgd3JpdGVGaWxlKGZpbGUsImltcG9ydCB7cHVibGljUmVhZENvcnN9IGZyb20gJy4vcHVibGljLWNvcnMubWpzJztcbiIrc291cmNlLnJlcGxhY2UoYW5jaG9yLGFuY2hvcisiYXBwLnVzZShwdWJsaWNSZWFkQ29ycygnaHR0cHM6Ly9yaWZ0LnN1cmdlLnNoJykpOyIpKTsKY29uc29sZS5sb2coJ0FwcGxpZWQgcmV2aWV3ZWQgcHVibGljLXJlYWQtb25seSBTdXJnZSBDT1JTLiBDcm9zcy1vcmlnaW4gYXV0aC93cml0ZXMgcmVtYWluIGRpc2FibGVkLicpOwo=\",'\"'\"'base64'\"'\"'));' && node deployment/apply-render-preview.mjs && npm ci --include=dev --ignore-scripts && npm run build",
+      "startCommand": "npm start"
+    },
+    "plan": "free",
+    "region": "oregon",
+    "healthCheckPath": "/healthz",
+    "numInstances": 1
+  }
+}

@@ -1,3 +1,4 @@
+import {verifyCollectionPublication} from './collection-publication-gate.js';
 import {DatabaseSync} from 'node:sqlite';
 import {mkdirSync,chmodSync} from 'node:fs';import {dirname} from 'node:path';
 import {isAddress} from 'ethers';
@@ -27,6 +28,7 @@ export class ExchangeIndex{
   if(cursor!=null){conditions.push('id<?');args.push(orderKey(cursor))}if(account){conditions.push('account=?');args.push(account.toLowerCase())}if(nft){conditions.push('nft=?');args.push(nft.toLowerCase())}
   const rows=this.db.prepare('SELECT document FROM exchange_orders WHERE '+conditions.join(' AND ')+' ORDER BY id DESC LIMIT ?').all(...args,limit+1),items=rows.slice(0,limit).map(r=>JSON.parse(r.document));return {items,nextCursor:rows.length>limit?items.at(-1).id:null,coverage:this.status()};
  }
+ order({type='listing',id}={}){if(!['listing','offer'].includes(type))throw Error('Invalid order type');const row=this.db.prepare('SELECT document FROM exchange_orders WHERE type=? AND id=?').get(type,orderKey(id));const item=row?JSON.parse(row.document):null;return {item:item?{...item,active:BigInt(item.remaining)>0n&&(item.expiry==='0'||BigInt(item.expiry)>BigInt(Math.floor(Date.now()/1000)))}:null,coverage:this.status()}}
  activity({nft,cursor,limit=24}={}){
   if(!isAddress(nft)||!Number.isInteger(limit)||limit<1||limit>48||cursor&&!/^\d{1,15}:\d{1,10}$/.test(cursor))throw Error('Invalid activity query');
   const conditions=['o.nft=?'],args=[nft.toLowerCase()];if(cursor){const [block,index]=cursor.split(':').map(Number);if(!Number.isSafeInteger(block)||!Number.isSafeInteger(index))throw Error('Invalid activity cursor');conditions.push('(e.block<? OR (e.block=? AND e.log_index<?))');args.push(block,block,index)}
@@ -36,10 +38,12 @@ export class ExchangeIndex{
   let order;for(const e of this.db.prepare('SELECT kind,payload FROM exchange_events WHERE type=? AND id=? ORDER BY block,log_index').all(type,id))order=reduceExchange(order,{kind:e.kind,payload:JSON.parse(e.payload)});
   this.db.prepare('DELETE FROM exchange_orders WHERE type=? AND id=?').run(type,id);if(order)this.db.prepare('INSERT INTO exchange_orders VALUES(?,?,?,?,?,?,?)').run(type,id,order.seller||order.buyer,order.nft,BigInt(order.remaining)>0n?1:0,Number(order.expiry),JSON.stringify(order));
  }
- async sync(provider,{span=256,confirmations=12}={}){
+ async sync(provider,{span=256,confirmations=12,throughBlock,chainReader,eventReader,signal,agreementTimeoutMs=15000}={}){
+  if(throughBlock!==undefined&&(!Number.isSafeInteger(throughBlock)||throughBlock<this.startBlock))throw Error('Invalid fixed index target');
+  const independent=chainReader!==undefined||eventReader!==undefined;if(independent&&(!chainReader||!eventReader||span>32))throw Error('Invalid exchange agreement configuration');if(signal?.aborted)throw Error('Exchange sync cancelled');
   if(!Number.isInteger(span)||span<1||span>2000||!Number.isInteger(confirmations)||confirmations<12)throw Error('Invalid sync bounds');
   if(Number((await provider.getNetwork()).chainId)!==25)throw Error('Wrong chain');
-  const cfg=this.state(),head=await provider.getBlockNumber(),target=head-confirmations;if(target<cfg.last_block)throw Error('RPC head regressed');
+  const cfg=this.state(),head=await provider.getBlockNumber(),target=Math.min(head-confirmations,throughBlock??Number.MAX_SAFE_INTEGER);if(target<cfg.last_block)throw Error('RPC head regressed');
   let ancestor=cfg.last_block;
   if(ancestor>=this.startBlock&&(await provider.getBlock(ancestor))?.hash!==cfg.block_hash){
    ancestor=this.startBlock-1;let found=false;
@@ -47,9 +51,8 @@ export class ExchangeIndex{
    for(const point of checkpoints){if((await provider.getBlock(point.block))?.hash===point.hash){ancestor=point.block;found=true;break}}
    if(!found&&cfg.last_block-this.startBlock>=span*32)throw Error('Reorg beyond retained recovery window; verified rebuild required');
   }
-  const from=ancestor+1,to=Math.min(target,from+span-1);if(to<from)return this.status();
-  const block=await provider.getBlock(to);if(!block?.hash)throw Error('Missing canonical block');
-  const logs=await provider.getLogs({address:this.address,fromBlock:from,toBlock:to,topics:[EXCHANGE_EVENTS.map(n=>exchangeInterface.getEvent(n).topicHash)]});
+  const from=ancestor+1,completeBlock=independent&&typeof eventReader.readCompleteBlockEvents==='function';let width=span,to=Math.min(target,from+width-1);if(to<from)return this.status();
+  let block,logs;for(;;){to=Math.min(target,from+width-1);block=await provider.getBlock(to);if(!block?.hash)throw Error('Missing canonical block');logs=await provider.getLogs({address:this.address,fromBlock:from,toBlock:to,topics:[EXCHANGE_EVENTS.map(n=>exchangeInterface.getEvent(n).topicHash)]});if(!completeBlock||!Array.isArray(logs)||logs.length<=512||from===to)break;width=Math.max(1,Math.floor(width/2))}if(completeBlock&&Array.isArray(logs)&&logs.length>1024)throw Error('Complete exchange block exceeds1024 events');
   if(!Array.isArray(logs)||logs.length>10000)throw Error('Oversized logs; reduce span');
   const keys=new Set(),positions=new Set(),blocks=new Map();const events=logs.map(l=>{
    if(l.removed||l.address?.toLowerCase()!==this.address||!Number.isSafeInteger(l.index)||l.index<0||!Number.isSafeInteger(l.blockNumber)||l.blockNumber<from||l.blockNumber>to||!/^0x[\da-f]{64}$/i.test(l.transactionHash)||!/^0x[\da-f]{64}$/i.test(l.blockHash))throw Error('Invalid exchange log');
@@ -63,6 +66,7 @@ export class ExchangeIndex{
   const invalidBlock=validated.find(result=>result.status==='rejected');if(invalidBlock)throw invalidBlock.reason;
   if((await provider.getBlock(to))?.hash!==block.hash)throw Error('Chain changed during fetch');
   if(ancestor>=this.startBlock&&ancestor!==cfg.last_block){const checkpoint=this.db.prepare('SELECT hash FROM exchange_checkpoints WHERE block=?').get(ancestor);if((await provider.getBlock(ancestor))?.hash!==checkpoint?.hash)throw Error('Recovery ancestor changed')}
+  const evidence=independent?await verifyCollectionPublication({provider,chainReader,eventReader,address:this.address,topics:EXCHANGE_EVENTS.map(n=>exchangeInterface.getEvent(n).topicHash),fromBlock:from,toBlock:to,ancestor,startBlock:this.startBlock,logs,expectedEndHash:block.hash,signal,timeoutMs:agreementTimeoutMs}):{};if(signal?.aborted)throw Error('Exchange sync cancelled');
   this.db.exec('BEGIN IMMEDIATE');try{
    const current=this.state();if(current.last_block!==cfg.last_block||current.block_hash!==cfg.block_hash)throw Error('Concurrent sync');
    const affected=new Map();for(const r of this.db.prepare('SELECT DISTINCT type,id FROM exchange_events WHERE block>?').all(ancestor))affected.set(r.type+':'+r.id,r);
@@ -71,6 +75,6 @@ export class ExchangeIndex{
    for(const e of affected.values())this.project(e.type,e.id);
    this.db.prepare('INSERT OR REPLACE INTO exchange_checkpoints VALUES(?,?)').run(to,block.hash);this.db.prepare('DELETE FROM exchange_checkpoints WHERE block NOT IN (SELECT block FROM exchange_checkpoints ORDER BY block DESC LIMIT 32)').run();
    this.db.prepare('UPDATE exchange_state SET last_block=?,block_hash=?,updated=? WHERE id=1').run(to,block.hash,Date.now());this.db.exec('COMMIT');
-  }catch(error){this.db.exec('ROLLBACK');throw error}return this.status();
+  }catch(error){this.db.exec('ROLLBACK');throw error}return {...this.status(),...evidence};
  }
 }

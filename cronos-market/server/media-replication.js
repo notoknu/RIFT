@@ -1,0 +1,18 @@
+import {createHash} from 'node:crypto';
+import {verifyCarBytes} from '../scripts/verify-car.js';
+export class MediaReplicationError extends Error{constructor(code){super(code);this.code=code}}
+const need=(v,c)=>{if(!v)throw new MediaReplicationError(c)};
+const sha=b=>createHash('sha256').update(b).digest('hex');
+export function verifyMetadataBytes(bytes,expectedSha256){need(Buffer.isBuffer(bytes)&&bytes.length<=524288&&/^[a-f0-9]{64}$/.test(expectedSha256||'')&&sha(bytes)===expectedSha256,'METADATA_DIGEST_MISMATCH');let metadata;try{metadata=JSON.parse(bytes.toString('utf8'))}catch{throw new MediaReplicationError('INVALID_METADATA_JSON')}need(metadata&&typeof metadata==='object'&&!Array.isArray(metadata),'INVALID_METADATA_JSON');return {sha256:expectedSha256,bytes:bytes.length,metadata}}
+/** Explicitly approved bounded CAR replication; readback integrity, not a retention SLA. */
+export async function replicateVerifiedMedia({root,archive,providers,required=2,timeoutMs=15000,approval,signal}={}){
+ need(Buffer.isBuffer(archive)&&archive.length<=8388608&&Array.isArray(providers)&&providers.length>=2&&providers.length<=5&&Number.isInteger(required)&&required>=2&&required<=providers.length&&Number.isInteger(timeoutMs)&&timeoutMs>=1&&timeoutMs<=60000,'INVALID_MEDIA_REPLICATION');
+ const ids=new Set(),domains=new Set(),origins=new Set();for(const p of providers){need(p&&/^[-a-zA-Z0-9_]{1,64}$/.test(p.id)&&/^[-a-zA-Z0-9_]{1,64}$/.test(p.failureDomain)&&!ids.has(p.id)&&!domains.has(p.failureDomain)&&typeof p.pinCar==='function'&&typeof p.readCar==='function','INVALID_MEDIA_PROVIDER');need(!p.operatorEndpointOrigin||!origins.has(p.operatorEndpointOrigin),'DUPLICATE_MEDIA_ENDPOINT');if(p.operatorEndpointOrigin)origins.add(p.operatorEndpointOrigin);ids.add(p.id);domains.add(p.failureDomain)}
+ const source=Buffer.from(archive),verified=await verifyCarBytes(source,root),commitment=sha(source);need(approval?.confirm==='REPLICATE VERIFIED CAR'&&approval.archiveSha256===commitment,'MEDIA_APPROVAL_REQUIRED');need(!signal?.aborted,'MEDIA_CANCELLED');
+ const outcomes=[];for(const p of providers){let timer,onAbort,stopped=false;try{
+  const work=(async()=>{need(!signal?.aborted&&!stopped,'MEDIA_CANCELLED');await p.pinCar({root,archive:Buffer.from(source),signal});need(!signal?.aborted&&!stopped,'MEDIA_CANCELLED');const bytes=await p.readCar({root,maxBytes:8388608,signal});need(!signal?.aborted&&!stopped,'MEDIA_CANCELLED');need(Buffer.isBuffer(bytes)&&bytes.length<=8388608,'MEDIA_READBACK_LIMIT');const check=await verifyCarBytes(bytes,root);need(!stopped&&!signal?.aborted&&check.complete,'MEDIA_CANCELLED');return {id:p.id,status:'verified',root:check.root,readbackSha256:sha(bytes)}})();
+  const interruption=new Promise((_,reject)=>{timer=setTimeout(()=>{stopped=true;reject(new MediaReplicationError('MEDIA_TIMEOUT'))},timeoutMs);onAbort=()=>{stopped=true;reject(new MediaReplicationError('MEDIA_CANCELLED'))};signal?.addEventListener('abort',onAbort,{once:true});if(signal?.aborted)onAbort()});
+  outcomes.push(await Promise.race([work,interruption]));
+ }catch(e){outcomes.push({id:p.id,status:'unverified',code:e instanceof MediaReplicationError?e.code:'MEDIA_PROVIDER_FAILED'})}finally{stopped=true;clearTimeout(timer);signal?.removeEventListener('abort',onAbort)}if(signal?.aborted)break}
+ return {format:'rift-media-replication-v1',root:verified.root,archiveSha256:commitment,required,verifiedCopies:outcomes.filter(o=>o.status==='verified').length,success:!signal?.aborted&&outcomes.filter(o=>o.status==='verified').length>=required,outcomes,scope:'Point-in-time verified CAR readbacks; operator independence, durable retention and future availability not proven'};
+}

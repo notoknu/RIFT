@@ -1,0 +1,12 @@
+{
+  "scope": "12-hour target, read-only local HTTP health/static/artifact sampling, NOT full functional or production acceptance",
+  "startedAt": "2026-11-24T15:56:26.211Z",
+  "targetHours": 12,
+  "status": "completed-http-soak",
+  "completed12Hours": true,
+  "samples": 32,
+  "failures": 0,
+  "lastSample": "2026-11-25T03:29:36.675Z",
+  "elapsedSeconds": 41590,
+  "finishedAt": "2026-11-25T04:02:40.313Z"
+}

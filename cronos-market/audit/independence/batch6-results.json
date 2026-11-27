@@ -1,0 +1,57 @@
+{
+  "batch": 6,
+  "scope": "Source-only opt-in bounded receipt acquisition; no production selection",
+  "implementation": [
+    "Receipt enumeration bypasses getLogs",
+    "Validate every provider-advertised transaction receipt and global log positions",
+    "Receipt/header hash comparison before publication",
+    "Read adapter permits bounded getTransactionReceipt"
+  ],
+  "bounds": {
+    "blocks": 32,
+    "transactions": 256,
+    "receipt_logs": 8192,
+    "raw_data_topic_bytes": 2097152,
+    "exchange_events": 512,
+    "receipt_concurrency": 4
+  },
+  "verification": {
+    "engineering": 486,
+    "new_receipt_tests": 12,
+    "focused_store_query_sync_rpc_recovery_receipts": 85,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "limitations": [
+    "Trusts single-provider transaction lists and receipt contents; no transaction/receipt trie or consensus proof",
+    "Explicit receipt acquisition selection; no automatic shrinking or fallback",
+    "Over-limit blocks stop, no persistent staging",
+    "No live mainnet RPC/provider compatibility or hosted durability acceptance"
+  ],
+  "remaining": [
+    "Independent completeness policy, adaptive scanning and over-limit block strategy",
+    "Durable recovery-intent journal and worker/synchronizer lifecycle integration",
+    "Hosted primary consistency, migration/import, transaction limits, restart and independent restore acceptance",
+    "Reviewed production worker/API selection",
+    "Collection/wallet jobs, core dependency removal, external API/SDK, contract/device/licensing gates"
+  ],
+  "activation": {
+    "production_wiring": false,
+    "hosted_probes": false,
+    "remote_writes": false,
+    "deployment": false,
+    "spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "evidence": [
+    "platform-batch6-focused.log",
+    "independence-batch6-regression.log",
+    "independence-batch6-security.log"
+  ]
+}

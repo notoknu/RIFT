@@ -6,7 +6,7 @@ public final class ExportFailureHarness {
  interface Op {void run() throws Exception;}
  static void check(boolean value){checks++;if(!value)throw new AssertionError("check "+checks);}
  static Exception rejects(Op op)throws Exception{try{op.run();}catch(Exception e){checks++;return e;}throw new AssertionError("unexpected success");}
- static String hash(byte[] value)throws Exception{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));}
+ static String hash(byte[] value)throws Exception{byte[] digest=MessageDigest.getInstance("SHA-256").digest(value);char[] digits="0123456789abcdef".toCharArray(),hex=new char[digest.length*2];for(int i=0;i<digest.length;i++){hex[i*2]=digits[(digest[i]&255)>>>4];hex[i*2+1]=digits[digest[i]&15];}return new String(hex);}
  static final byte[] DATA={1,2,3,4};
  static final class FaultStream extends OutputStream {
   int writes,closes;boolean writeFault,flushFault,closeFault;ByteArrayOutputStream bytes=new ByteArrayOutputStream();

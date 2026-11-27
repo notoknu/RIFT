@@ -1,0 +1,24 @@
+[Unit]
+Description=RIFT opted-in authenticated ciphertext backup receiver
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=%h/cronos-market
+ExecStart=/usr/bin/env node %h/cronos-market/scripts/backup-receiver-service.js run %h/.config/rift/receiver.json
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=90
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/rift
+MemoryMax=256M
+TasksMax=32
+
+[Install]
+WantedBy=default.target

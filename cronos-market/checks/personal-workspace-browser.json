@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "scope": "Desktop Chromium and mocked native channel; NOT Android SQLite/consent/WebView execution",
+  "scenarios": [
+    "native transport fixture: save/reload/restore/delete and explicit favorites merges",
+    "native denial does not create browser workspace fallback",
+    "desktop actual Web Crypto encrypted file roundtrip, wrong-pass refusal, cleared passphrase, explicit review-before-import",
+    "backup controls responsive at 360/393/768/1440px",
+    "IndexedDB serialized 64-profile budget and empty-profile slot reclamation"
+  ],
+  "pageErrors": []
+}

@@ -1,0 +1,17 @@
+# TEMPLATE ONLY. Queue DB must already be explicitly initialized; no provisioning/migration.
+[Unit]
+Description=RIFT one-attempt durable encrypted backup delivery
+After=network-online.target
+[Service]
+Type=oneshot
+User=rift
+Group=rift
+WorkingDirectory=/opt/rift
+ExecStart=/usr/bin/node /opt/rift/scripts/independence-ops.js /etc/rift/backup-delivery.json
+TimeoutStartSec=90
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/rift-recovery

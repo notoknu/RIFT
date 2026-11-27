@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "scope": "Local real Worker/D1 emulator; not a deployed Cloudflare account",
+  "checks": [
+    "Creator preflight exact-origin/no cookie credentials",
+    "Reject hostile origin",
+    "Wallet-signature bearer sign-in",
+    "D1 draft persistence within test database",
+    "Logout revocation"
+  ],
+  "mainnetTransactions": 0
+}

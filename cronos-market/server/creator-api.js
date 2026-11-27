@@ -4,7 +4,7 @@ import {remoteD1} from './remote-d1.js';
 import express from 'express';
 import {localD1} from './local-d1.js';
 import {createCreatorService} from '../shared/creator-service.js';
-import {pinataProvider} from '../shared/pinata-provider.js';
+import {creatorUploadProvider} from './creator-upload-provider.js';
 import {creatorChain} from './creator-chain.js';
 export function creatorAPIPlugin({env=process.env}={}){
  let service,initializing;
@@ -23,7 +23,7 @@ export function creatorAPIPlugin({env=process.env}={}){
      if(!initializing)initializing=(async()=>{
       const driver=env.CREATOR_DB_DRIVER||'sqlite';if(!['sqlite','libsql'].includes(driver))throw Error('Unsupported account storage driver');
       const db=driver==='libsql'?await remoteD1(env):localD1(env.CREATOR_DB||'data/creator.sqlite');
-      try{return createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db,origin:env.PUBLIC_ORIGIN,chain:creatorChain(env),uploadProvider:pinataProvider(env.PINATA_JWT),uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0),logger:(event,e)=>console.error(event,e.name||'Error')})}catch(e){db.close();throw e}
+      try{return createCreatorService({sessionTransport:env.CREATOR_AUTH_TRANSPORT||'cookie',db,origin:env.PUBLIC_ORIGIN,chain:creatorChain(env),uploadProvider:creatorUploadProvider(env),uploadBytes:Number(env.PIN_SPONSORED_BYTES||0),uploadFiles:Number(env.PIN_SPONSORED_FILES||0),logger:(event,e)=>console.error(event,e.name||'Error')})}catch(e){db.close();throw e}
      })().catch(e=>{initializing=null;throw e});
      service=await initializing;
     }

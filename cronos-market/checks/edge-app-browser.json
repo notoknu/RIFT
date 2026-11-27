@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "scope": "Local real workerd/D1 + built frontend in desktop Chromium, mobile viewport sizes; not phone WebView",
+  "scenarios": [
+    "real assets under CSP",
+    "SPA deep link",
+    "fresh random-wallet signature",
+    "HttpOnly same-origin browser session",
+    "draft mutation",
+    "reload session continuity",
+    "logout invalidates session",
+    "360/393/768/1440 widths"
+  ],
+  "pageErrors": [],
+  "cspErrors": [],
+  "privateKeysSaved": false
+}

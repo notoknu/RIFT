@@ -1,0 +1,18 @@
+# TEMPLATE ONLY. Not installed/enabled. No production default, signing or provisioning.
+[Unit]
+Description=RIFT finite independently verified maintenance
+After=network-online.target
+[Service]
+Type=oneshot
+User=rift
+Group=rift
+WorkingDirectory=/opt/rift
+EnvironmentFile=/etc/rift/media-maintenance.env
+ExecStart=/usr/bin/node /opt/rift/scripts/maintenance-ops.js /etc/rift/maintenance-run.json
+TimeoutStartSec=240
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/rift-recovery

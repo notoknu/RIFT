@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "scenarios": [
+    "Real local API wallet-message login",
+    "Private profile save and reload persistence",
+    "Private profile export download",
+    "Consistent private workspace download",
+    "Typed-confirmation workspace deletion and fresh empty account",
+    "Active account session revocation and signed-out UI",
+    "Draft save across reload",
+    "Draft restore",
+    "History/back navigation",
+    "Token permalink refresh",
+    "Public profile without wallet prompt"
+  ],
+  "pageErrors": []
+}

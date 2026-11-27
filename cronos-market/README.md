@@ -1,3 +1,5 @@
+> **Latest handoff: pass74.** Read [LATEST-HANDOFF-START-HERE.md](LATEST-HANDOFF-START-HERE.md) first for the current Git ZIP, fresh debug APK, setup steps and verified scope. Older release/APK notes below are historical. No production or funded-wallet approval.
+
 # RIFT — Cronos NFT application
 
 **Release status: public preview, not approved for funded-wallet or mainnet-trading production use.**

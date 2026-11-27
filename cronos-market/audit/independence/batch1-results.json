@@ -1,0 +1,28 @@
+{
+  "scope": "Independence batch1, source-only registry admission bridge; local SDK fixtures not hosted acceptance",
+  "engineeringPassed": 401,
+  "newRegistryTestsPassed": 13,
+  "securityPassed": 7,
+  "securityRedisExecuted": true,
+  "simulatedContractsPassed": 64,
+  "implementationPassed": 6,
+  "controlledBrowserSuitePassed": true,
+  "frontendBuildPassed": true,
+  "localAndroidShellAndArtifactToolingPassed": 11,
+  "androidRebuilt": false,
+  "nativeTestsExecuted": 0,
+  "hostedTursoAccepted": false,
+  "indexesMigratedToTurso": false,
+  "workerStartedInProduction": false,
+  "deployed": false,
+  "transactionsSent": 0,
+  "tradingEnabled": false,
+  "sourceFiles": {
+    "server/collection-registry.js": "5511ee79ff7351312f9c6208ddd86ecfeaab92c596dee4cef4f21c7e977a85d6",
+    "server/collection-config.js": "4feae437bfcd095593ed0061e7c062b0ca36994f80213df2e7623984948cf25d",
+    "server/collection-api.js": "c74e9ccb8f835257e9506e5a16dee3283b8068347e668e30927c5868f6a3fb6b",
+    "server/collection-worker.js": "41c5dc2b42c37ab509920522d09645d57c7dca5851638873c1c938d89e8438ac",
+    "server/status-api.js": "95f0cd0ca5cf8a923b7aa2aea14d7bfec9c04a51de6b606604ade9d10f50c2be",
+    "checks/collection-registry.test.mjs": "c6cd88d0ae8a6b232d6654d3509d635531cd307037193073d0b8b0639cdd951c"
+  }
+}

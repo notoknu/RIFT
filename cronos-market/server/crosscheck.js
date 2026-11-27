@@ -1,9 +1,11 @@
+import {ownedPublicDataSelection} from '../shared/owned-public-data.js';
+import {createPublicDataSnapshot} from './public-data-snapshot.js';
+import {publicDataURL} from '../shared/public-data-providers.js';
+import {publicDataFetch} from './public-data-fetch.js';
 import {formatEther} from 'ethers';
-import {fileURLToPath} from 'node:url';
 import {getDirectory} from './rankings.js';
 import {boundedBytes} from '../shared/creator-service.js';
 import {createRefreshResource} from './refresh-resource.js';
-import {createJsonSnapshot} from './json-snapshot.js';
 const ADDRESS=/^0x[a-f0-9]{40}$/;
 const positive=value=>value!==null&&/[1-9]/.test(String(value));
 function amount(value){if(value===null||value===undefined)return null;if(typeof value==='number'){if(!Number.isFinite(value)||value<0||value>Number.MAX_SAFE_INTEGER)throw Error('Invalid venue amount');value=String(value);}if(typeof value!=='string'||!/^\d{1,78}(?:\.\d{1,18})?$/.test(value))throw Error('Invalid venue amount');return value;}
@@ -41,10 +43,10 @@ export function validateComparison(value){
  }
  if(value.matched!==matched||value.ebisuOnlyInSample!==value.collections.length-matched||typeof value.scope!=='string'||value.scope.length>2000)throw Error('Invalid saved comparison counts');return value;
 }
-export async function fetchComparison({fetcher=globalThis.fetch,readDirectory=getDirectory,now}={}){
- const ranked=async timeframe=>{const response=await fetcher('https://api.wolfswap.gg/factions/ebisus/collections-ranked?chain=25&sortBy=volume&timeframe='+timeframe+'&direction=desc&offset=0&limit=100',{signal:AbortSignal.timeout(20000),redirect:'error',credentials:'omit'});if(!response.ok)throw Error('Venue unavailable');const body=JSON.parse(new TextDecoder().decode(await boundedBytes(response,2097152)));if(body.chain!==25||!Array.isArray(body.rows)||body.rows.length>100)throw Error('Invalid bounded venue response');return body.rows;};
+export async function fetchComparison({fetcher=publicDataFetch,env=process.env,readDirectory=getDirectory,now}={}){
+ const ranked=async timeframe=>{const response=await fetcher(publicDataURL('ebisu','ranked',{chain:25,sortBy:'volume',timeframe,direction:'desc',offset:0,limit:100},env),{signal:AbortSignal.timeout(20000),redirect:'error',credentials:'omit'});if(!response.ok)throw Error('Venue unavailable');const body=JSON.parse(new TextDecoder().decode(await boundedBytes(response,2097152)));if(body.chain!==25||!Array.isArray(body.rows)||body.rows.length>100)throw Error('Invalid bounded venue response');return body.rows;};
  const [all,week,minted]=await Promise.all([ranked('all'),ranked('7d'),readDirectory()]);return buildComparison({all,week,minted,now});
 }
-export function createComparisonResource({load=fetchComparison,snapshot=createJsonSnapshot(fileURLToPath(new URL('../data/crosscheck.json',import.meta.url))),...options}={}){return createRefreshResource({load,validate:validateComparison,readSaved:snapshot.read,save:snapshot.save,...options});}
-const resource=createComparisonResource();export const crosscheck=()=>resource.get();
+export function createComparisonResource({load=fetchComparison,snapshot=createPublicDataSnapshot('crosscheck',['ebisu','minted']),...options}={}){const resource=createRefreshResource({load,validate:validateComparison,readSaved:snapshot.read,save:snapshot.save,...options});return {...resource,get(){snapshot.assertSelected?.();return resource.get()}};}
+const resource=createComparisonResource();export const crosscheck=()=>{if(ownedPublicDataSelection())throw Error('Owned bundle does not supply independent cross-venue observations');return resource.get()};
 export function crosscheckPlugin({read=crosscheck}={}){return {name:'market-crosscheck',configureServer(server){server.middlewares.use('/api/crosscheck',async(req,res)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');if(req.method!=='GET'){res.statusCode=405;return res.end('{}');}try{res.end(JSON.stringify(await read()));}catch(error){res.statusCode=503;if(error.retryAfterMs>0)res.setHeader('Retry-After',String(Math.ceil(error.retryAfterMs/1000)));res.end(JSON.stringify({error:'Cross-market comparison unavailable or cooling down; no substitute figures are shown.'}));}});}};}

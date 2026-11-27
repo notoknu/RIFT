@@ -14,16 +14,16 @@ function validateReceipt(receipt,record){
  return status;
 }
 const KEY='rift:transactions:v1',UPDATE='rift:transactions-updated';
-export function readTransactions(storage=globalThis.localStorage){try{const data=JSON.parse(storage.getItem(KEY)||'[]');return Array.isArray(data)?data.filter(v=>v&&v.chainId===25&&typeof v.id==='string'&&typeof v.wallet==='string').slice(0,50):[]}catch{return []}}
+export function readTransactions(storage=globalThis.localStorage){try{const raw=storage.getItem(KEY)||'[]';if(raw.length>2097152)return [];const data=JSON.parse(raw);return Array.isArray(data)?data.filter(v=>v&&v.chainId===25&&typeof v.id==='string'&&typeof v.wallet==='string').slice(0,50):[]}catch{return []}}
 function persist(record,storage=globalThis.localStorage){
- const records=readTransactions(storage),result=[record,...records.filter(v=>v.id!==record.id)].slice(0,50);storage.setItem(KEY,JSON.stringify(result));if(typeof dispatchEvent==='function')dispatchEvent(new Event(UPDATE));
+ record.updatedAt=new Date().toISOString();record.currentStep=record.status==='awaiting-wallet'?'wallet-prompt':['submitted','submitted-uncertain','reorg-uncertain'].includes(record.status)?'confirmation':['confirmed','reverted'].includes(record.status)?'complete':'review';record.confirmationStatus=record.status==='confirmed'?'included':record.status==='reverted'?'reverted':['submitted','submitted-uncertain'].includes(record.status)?'pending':'unknown';let stored;try{const raw=storage.getItem(KEY)||'[]';stored=JSON.parse(raw);if(raw.length>2097152||!Array.isArray(stored)||stored.length>50||stored.some(r=>!r||r.chainId!==25||typeof r.id!=='string'||!isAddress(r.wallet||'')))throw Error()}catch{throw Error('Transaction recovery journal is malformed/unavailable; no new transaction requested')}const records=readTransactions(storage),result=[record,...records.filter(v=>v.id!==record.id)];while(result.length>50){let index=-1;for(let i=result.length-1;i>0;i--)if(['confirmed','reverted','wallet-rejected','cancelled','replaced-different'].includes(result[i].status)){index=i;break}if(index<0)throw Error('Transaction recovery journal is full of unresolved records. No new transaction was requested.');result.splice(index,1)}storage.setItem(KEY,JSON.stringify(result));if(typeof dispatchEvent==='function')dispatchEvent(new Event(UPDATE));
 }
 export {UPDATE as TRANSACTION_UPDATE};
 /** Never re-broadcasts or re-signs automatically. Save before the first wallet prompt. */
 export async function trackedTransaction(action,signer,send,context={},storage=globalThis.localStorage){
  if(Number((await signer.provider.getNetwork()).chainId)!==25)throw Error('Transaction requires Cronos chain 25');
- const wallet=(await signer.getAddress()).toLowerCase(),record={id:crypto.randomUUID(),chainId:25,wallet,action:String(action).slice(0,80),context:JSON.stringify(context).slice(0,2000),status:'awaiting-wallet',createdAt:new Date().toISOString()};
- if(!isAddress(wallet))throw Error('Invalid signer address');
+ const wallet=(await signer.getAddress()).toLowerCase(),record={id:crypto.randomUUID(),chainId:25,wallet,action:String(action).slice(0,80),context:JSON.stringify(context),status:'awaiting-wallet',createdAt:new Date().toISOString()};
+ if(!isAddress(wallet))throw Error('Invalid signer address');if(record.context.length>16384)throw Error('Transaction context too large; no transaction requested');
  if(typeof signer.provider.getBlockNumber==='function'){try{const block=await signer.provider.getBlockNumber();if(Number.isSafeInteger(block)&&block>=0)record.startBlock=block}catch{}}
  try{persist(record,storage)}catch{throw Error('Transaction recovery storage is unavailable. No transaction was requested.')}
  let tx;
@@ -45,7 +45,7 @@ export async function trackedTransaction(action,signer,send,context={},storage=g
    else if(e?.code===4001||e?.code==='ACTION_REJECTED')record.status='wallet-rejected';
    else {record.status='submission-unknown';record.recoveryNote='No valid transaction hash reached RIFT. The wallet or RPC may have submitted it before the error. Inspect wallet activity and the explorer before repeating this value action. Automatic checks cannot find a hashless submission; no retry was sent.';}
   }
-  try{persist(record,storage)}catch{}throw e;
+  record.error={code:record.status==='wallet-rejected'?'WALLET_REJECTED':record.status==='reverted'?'TRANSACTION_REVERTED':record.status==='cancelled'?'TRANSACTION_CANCELLED':record.status==='replaced-different'?'REPLACED_DIFFERENT':'TRANSACTION_OUTCOME_UNCERTAIN',message:record.status==='wallet-rejected'?'Wallet rejected the request.':record.status==='reverted'?'Transaction reverted.':'Check the recorded outcome before repeating this action.'};try{persist(record,storage)}catch{}throw e;
  }
 }
 export async function reconcileTransactions(provider,wallet,storage=globalThis.localStorage){
@@ -60,9 +60,12 @@ export async function reconcileTransactions(provider,wallet,storage=globalThis.l
   if(!receipt){const replacement=await recoverReplacement(provider,record,budget);if(!replacement){persist(record,storage);continue}record.replacedHash=record.hash;record.hash=replacement.transaction.hash;record.replacementDiscovered=true;receipt=replacement.receipt;
    if(!replacement.same){record.status=replacement.cancelled?'cancelled':'replaced-different';record.blockNumber=receipt.blockNumber;record.recoveryNote='Different transaction consumed this nonce. No dependent action was sent.';persist(record,storage);continue}
   }
-  try{record.status=validateReceipt(receipt,record)===1?'confirmed':'reverted';record.blockNumber=receipt.blockNumber;record.blockHash=receipt.blockHash;record.contractAddress=record.status==='confirmed'?deployedAddress(receipt,record):null;delete record.nonceSearch;delete record.recoveryNote;}
+  try{record.status=validateReceipt(receipt,record)===1?'confirmed':'reverted';record.blockNumber=receipt.blockNumber;record.blockHash=receipt.blockHash;record.contractAddress=record.status==='confirmed'?deployedAddress(receipt,record):null;delete record.nonceSearch;delete record.recoveryNote;delete record.error;}
   catch{if(['confirmed','reverted'].includes(record.status))record.status='reorg-uncertain';delete record.contractAddress;record.recoveryNote='RPC receipt identity/status/block mismatch; observation not accepted. No transaction was sent.';}
   persist(record,storage);
  }
  return readTransactions(storage).filter(r=>r.wallet===wallet);
 }
+
+export function markTransactionRefresh(hash,ok,storage=globalThis.localStorage){if(!/^0x[\da-f]{64}$/i.test(hash||''))return;const r=readTransactions(storage).find(r=>r.hash?.toLowerCase()===hash?.toLowerCase());if(r?.status==='confirmed'){r.uiRefreshStatus=ok?'refreshed':'refresh-pending';persist(r,storage)}}
+export function atomicBatchOutcomes(record){try{const c=JSON.parse(record.context||'{}');if(c.batch?.atomic!==true||!Array.isArray(c.batch.items)||c.batch.items.length>20)return [];const outcome=record.status==='confirmed'?'confirmed':record.status==='reverted'?'reverted':record.status==='wallet-rejected'?'wallet-rejected':record.status==='cancelled'?'cancelled':record.status==='replaced-different'?'replacement-differs':'pending-or-unknown';return c.batch.items.filter(i=>/^\d{1,78}$/.test(String(i.id))&&BigInt(i.id)<2n**256n).map(i=>({id:String(i.id),quantity:String(i.quantity),outcome,atomic:true}))}catch{return []}}

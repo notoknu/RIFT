@@ -1,16 +1,19 @@
-import {isAddress} from 'ethers';import {ExchangeIndex} from './exchange-index.js';
-export function exchangeAPIPlugin({env=process.env}={}){let store;return {name:'rift-v2-exchange',configureServer(server){
- server.middlewares.use('/api/v1/exchange',(req,res)=>{
+import {openConfiguredProjectionReadRepository} from './projection-read-repository.js';
+import {isAddress} from 'ethers';
+import {createProjectionRepositorySlot,projectionReadHttpStatus} from '../shared/projection-read-contract.js';
+export function exchangeAPIPlugin({env=process.env,createRepository}={}){const slot=createProjectionRepositorySlot({kind:'exchange',open:()=>{const config={path:env.EXCHANGE_INDEX_DB||'data/exchange.sqlite',address:env.EXCHANGE_ADDRESS,startBlock:Number(env.EXCHANGE_START_BLOCK)};return createRepository?createRepository(config):openConfiguredProjectionReadRepository({env,kind:'exchange',path:config.path,binding:config})}});return {name:'rift-v2-exchange',close:()=>slot.close(),configureServer(server){
+ server.middlewares.use('/api/v1/exchange',async(req,res)=>{
   res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
   const send=(status,value)=>{res.statusCode=status;res.end(JSON.stringify(value))};if(req.method!=='GET')return send(405,{error:'GET required'});
-  const configured=isAddress(env.EXCHANGE_ADDRESS||'')&&/^\d+$/.test(env.EXCHANGE_START_BLOCK||'')&&/^0x[\da-f]{64}$/i.test(env.EXCHANGE_RUNTIME_HASH||'');
+  const configured=isAddress(env.EXCHANGE_ADDRESS||'')&&!/^0x0{40}$/i.test(env.EXCHANGE_ADDRESS)&&Number.isSafeInteger(Number(env.EXCHANGE_START_BLOCK))&&/^\d+$/.test(env.EXCHANGE_START_BLOCK||'')&&/^0x[\da-f]{64}$/i.test(env.EXCHANGE_RUNTIME_HASH||'');
   const url=new URL(req.url,'http://internal');
   if(url.pathname==='/capabilities')return send(200,{chainId:25,configured,tradingEnabled:configured&&env.EXCHANGE_TRADING_ENABLED==='1',address:configured?env.EXCHANGE_ADDRESS:null,runtimeHash:configured?env.EXCHANGE_RUNTIME_HASH:null,review:'Unaudited software. Enabling requires explicit operator release approval. Zero platform fee; wallet pays gas.'});
-  if(!['/listings','/offers','/activity'].includes(url.pathname))return send(404,{error:'Unknown exchange route'});
+  const detail=url.pathname.match(/^\/(listings|offers)\/(\d{1,78})$/);if(!detail&&!['/listings','/offers','/activity'].includes(url.pathname))return send(404,{error:'Unknown exchange route'});
   if(!configured)return send(503,{error:'V2 exchange is not deployed/configured'});
-  try{store||=new ExchangeIndex({path:env.EXCHANGE_INDEX_DB||'data/exchange.sqlite',address:env.EXCHANGE_ADDRESS,startBlock:Number(env.EXCHANGE_START_BLOCK)});
-   if(url.pathname==='/activity')return send(200,store.activity({nft:url.searchParams.get('nft'),cursor:url.searchParams.get('cursor'),limit:Number(url.searchParams.get('limit')||24)}));
-   return send(200,store.page({type:url.pathname==='/offers'?'offer':'listing',cursor:url.searchParams.get('cursor'),limit:Number(url.searchParams.get('limit')||24),nft:url.searchParams.get('nft')||undefined,account:url.searchParams.get('account')||undefined,includeClosed:url.searchParams.get('closed')==='1'}));
-  }catch(e){return send(/Invalid|integer|range/i.test(e.message)?400:503,{error:'Exchange query unavailable or invalid'})}
+  try{return await slot.use(async store=>{
+   if(detail){const result=await store.order({type:detail[1]==='offers'?'offer':'listing',id:detail[2]});return send(result.item?200:404,result)}
+   if(url.pathname==='/activity')return send(200,await store.activity({nft:url.searchParams.get('nft'),cursor:url.searchParams.get('cursor'),limit:Number(url.searchParams.get('limit')||24)}));
+   return send(200,await store.page({type:url.pathname==='/offers'?'offer':'listing',cursor:url.searchParams.get('cursor'),limit:Number(url.searchParams.get('limit')||24),nft:url.searchParams.get('nft')||undefined,account:url.searchParams.get('account')||undefined,includeClosed:url.searchParams.get('closed')==='1'}));
+  });}catch(e){return send(projectionReadHttpStatus(e),{error:'Exchange query unavailable or invalid'})}
  });
 }}}

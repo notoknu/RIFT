@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-11-25T14:32:27.034Z",
+  "scope": "Android device availability and optional isolated instrumentation; not wallet/mainnet or full lifecycle acceptance",
+  "status": "blocked",
+  "checks": [],
+  "instrumentationRequested": false,
+  "detectedDevices": [],
+  "reason": "No selected authorized Android device/emulator attached"
+}

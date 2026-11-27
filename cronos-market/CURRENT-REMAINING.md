@@ -1,3 +1,13 @@
+> **Current checkpoint — Batch17:** Batch15–16 added authenticated filesystem vault inventory/publication, readback audit and selected quarantined restore drill. Batch17 adds reviewed selected-artifact replication between separately keyed pinned filesystem vaults, explicit partial-commit/inspection evidence, bounded audit monitoring, opt-in signed public-HTTPS notification transport, and uninstalled non-root audit service/timer templates. Local tests are not deployed/off-host/device/independent acceptance. Current ownership split: `WORK-OWNERSHIP.md` and `../RIFT-deliverables/31-INDEPENDENCE-BATCH17-REPORT-AND-WORK-OWNERSHIP.md`. Earlier lists below remain historical; newly implemented local capabilities must not be listed as completely unimplemented. No production changes/spending.
+
+> **Batch14 update:** unified single-co-located SQLite recovery now includes exchange/journal/stage/job/review/archive state, streaming authenticated encryption/readback, exact quarantine restore, local key rotation and isolated drill. This is not split-database/hosted backup, actual off-host retention or production authority. See UNIFIED-RECOVERY-RUNBOOK.md and updated WORK-OWNERSHIP.md. Older lists below are historical.
+
+> **Batch13 update:** validated local-candidate operator CLI and bounded foreground supervision now implemented/tested (offline validate/plan, explicit config+endpoint commitment, queue-only health, code-only events, fresh clients, circuit stops and graceful SIGTERM). Actual deployed service/hosted support, external alert transport and long-duration soak remain open. See PLATFORM-OPERATOR-RUNBOOK.md and WORK-OWNERSHIP.md. Earlier remaining lists are historical.
+
+> **Batch12 current update:** integrated range-to-stage dispatch, durable32job queue/finite scheduling, contention backoff/expiry quarantine, reviewed exact stage-marker closure, reviewed fenced job rearm and terminal-stage archive/prune are now implemented/tested locally. Not a deployed daemon, hosted cutover, all-density solution or secure unified off-host restore. See EXCHANGE-JOBS-RECOVERY-RUNBOOK.md and updated WORK-OWNERSHIP.md. Older batch sections below are historical.
+
+> Batch11: explicit finite stage-worker selection now discovers/resumes persisted acquiring/ready stages and admits/publishes one next block under a shared RPC/step/deadline/lease budget. No daemon, range-scanner dispatch or production integration. Held/publishing markers block replay. See STAGE-WORKER-RUNBOOK.md.
+
 # Remaining work — current consolidated status
 
 ## Delivery and runtime gates
@@ -140,3 +150,35 @@ Hosted read-only warm follow-up:5of6smoke checks PASS; private-path404check fail
 Owner checklist included as YOUR-NEXT-STEPS.md: install/test unchanged v30 on disposable device with EMPTY external wallet; report model/Android/wallet versions and connection/return/disconnect outcomes; send redacted current Render Build & Deploy settings before manual publish guidance; confirm intended existing free external database. GitHub/Render connector lookups returned unsupported, so no supported authenticated publish path through these integrations here. No request to paste tokens/seeds/private keys. No merge/deploy of unreviewed v2 trading.
 
 Remaining:19native tests compiled0executed, real-device authentication/biometric/SAF/process-death, actual wallet pairing/deep-link/app-switch, hosted deployment/persistence/independent backup restore, independent trading review and approved mainnet acceptance, broader feature integrations/distributed provider coordination, licensing. No deployment, paid provisioning, CRO spend or native-signing approval.
+
+## Independence batch1 — authoritative registry admission bridge
+
+Source-only async read-only libSQL/local registry adapter and cached bounded admission wired into collection worker/API; remote outage fails closed, status reports remote-not-inspected.13new registry tests, actual SDK fixture and HTTP indexed-path proof. See INDEPENDENCE-PROGRESS.md for exact incomplete A/B mapping. Projections remain local SQLite; no remote platform migration/fenced jobs/automatic worker, no competitor independence/trading/native/hosted acceptance. No deployment/spend. v30 Android binary unchanged/historical.
+
+## Independence batch2 — transactional remote exchange repository candidate
+
+Added explicit versioned additive schema/migration, libSQL store, atomic exchange event/order/checkpoint transactions, DB-clock fenced leases, revision CAS, rollback/reprojection and fresh-session-required fault policy.22new real local SDK tests.423engineering/7security(realRedis)/64simulatedcontracts/6implementation/fullbrowser/frontendbuild/11localAndroidshell-artifacttools PASS. No production wiring/live Turso writes, RPC acquisition integration, remote throughput/durability acceptance or Android rebuild. Indexes on deployed system still local SQLite. Next: query/status parity and verified canonical synchronizer integration. See PLATFORM-INDEX-STORE.md and INDEPENDENCE-PROGRESS.md. No spend/deploy/trading/native signing activation.
+
+### Independence batch3 update
+Candidate remote exchange read/status/checkpoint parity and bounded RPC/reorg acquisition are now implemented and tested locally, but not production-wired. Next priorities: RPC completeness/dense-block receipt strategy; fresh-session ambiguous-commit reconciliation; explicit disposable remote migration/restore/limits acceptance; then reviewed shared worker/API selection. Production local-index dependency remains. No activation, paid resources, chain spend, APK rebuild or native-signing approval.
+
+### Independence batch4 update
+Complete bounded-range header ancestry and per-RPC-call deadline/cancellation/call-budget controls are implemented source-only. Transport-level abort/aggregate deadline, log completeness/receipts, dense-block fallback, adaptive scheduling and fresh-session ambiguous-commit reconciliation remain. No production worker/API change or hosted migration. Cancellation after commit invocation is not a no-write guarantee.
+
+### Independence batch5 update
+Explicit fresh-client uncertain-commit observation is implemented and locally fault-tested, without retry. Not wired into production/synchronizer lifecycle. Still open: durable recovery-intent journal, authoritative hosted read-after-write/partition acceptance and lifecycle handling; receipt completeness/dense blocks/adaptive scanning; hosted migration/restore/limits; reviewed worker/API wiring. Production remains local SQLite.
+
+### Independence batch6 update
+Explicit bounded receipt acquisition is now implemented: independent of getLogs within the chosen range, but still trusting provider transaction lists/receipts. Remaining: independent completeness policy, adaptive scheduling and blocks beyond staging limits; durable recovery journal/lifecycle; hosted primary consistency, transaction limits and explicit migration/restart/independent restore; then production worker/API review. Production remains local SQLite; no activation.
+
+### Independence batch7 update
+Explicit adaptive scanning and shared total acquisition deadline/call budgets implemented and locally tested. Single-block oversize still stops: persistent staging is not implemented. Durable recovery journal/worker lifecycle, independent completeness policy, hosted migration/limits/restore/consistency, reviewed API/worker wiring and remaining platform/security/device/license gates remain. See REMAINING-ACTIVATION-GATES.md for gate-by-gate evidence. No production activation.
+
+### Independence batch8 update
+Persistent recovery journal plus explicit bounded scanner/restart integration and local process-kill evidence are now implemented. Bounded snapshot export/absent-stream atomic restore is tested against an independent local file; hosted restore remains unaccepted. Still assistant work: durable oversized-block staging, reviewed journal resolution/retention, full worker/jobs, large backup tooling, shared API/store cutover, collection/wallet/stats/SDK/dependency removal and further acceptance tooling. Owner/joint work is separated in WORK-OWNERSHIP.md; no request for user coding, new accounts or secrets. No production activation.
+
+### Independence batch9 update
+Explicit matching-publication review, verified acknowledged archive/prune and finite lease-renewing worker cycles are implemented source-only. No force-clear for prepared/unchanged/conflicting/superseded/unresolved records. Remaining: oversized staging, nonmatching resolution/audit rotation, authenticated/encrypted off-host retention, full durable/fair scheduler/supervisor, hosted migration/consistency/restore acceptance, shared worker/API cutover and remaining platform/security/device/license gates. See WORK-OWNERSHIP.md and RECOVERY-REVIEW-RUNBOOK.md. No production activation.
+
+### Independence batch10 update
+Explicit hidden/resumable next-block staging and journaled complete-block publication now implemented/tested for up to4096transactions within512matching-event/final repository bounds. Scanner/cycle/production do not automatically select it. Still mine: automatic jobs, >512event strategy, stage marker resolution/archival and recovery packaging, plus remaining full scheduler/backup/API/platform work. Hosted/security/device/license acceptance remains separate. See RECEIPT-STAGING-RUNBOOK.md and WORK-OWNERSHIP.md.

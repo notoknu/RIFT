@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "scope": "Isolated real local HTTPS cross-site CORS+creator service+SQLite+Chromium, not deployed backend acceptance",
+  "checks": [
+    "Wallet-message challenge and verification",
+    "No session token returned to UI",
+    "Draft write/read",
+    "Actual browser cross-site Origin and Sec-Fetch-Site",
+    "Logout revocation",
+    "No session restoration after reload"
+  ],
+  "mainnetTransactions": 0
+}

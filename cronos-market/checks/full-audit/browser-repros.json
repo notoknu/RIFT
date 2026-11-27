@@ -1,0 +1,25 @@
+[
+  {
+    "id": "A-11",
+    "test": "Saved collection persistence",
+    "result": "Confirmed: saved collection disappears after browser refresh"
+  },
+  {
+    "id": "A-03",
+    "test": "NFT attributes containing null",
+    "errors": [
+      "Cannot read properties of null (reading 'trait_type')"
+    ],
+    "rootEmptied": true,
+    "result": "Confirmed metadata crash"
+  },
+  {
+    "id": "A-04",
+    "test": "Untrusted drop contract returns storageMode=3",
+    "errors": [
+      "Cannot read properties of undefined (reading 'title')"
+    ],
+    "rootEmptied": true,
+    "result": "Confirmed untrusted-contract response crash"
+  }
+]

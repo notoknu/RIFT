@@ -1,7 +1,5 @@
 // Shared exact write-route policy. Unrelated APIs must never have bodies consumed.
-export function creatorRoute(pathname,method='GET'){
- const path=pathname.split('?')[0].replace(/\/$/,'');
- const routes=[
+const routes=[
  [/^\/api\/v1\/account\/export$/,['GET']],
  [/^\/api\/v1\/account\/delete-private$/,['POST']],
  [/^\/api\/v1\/auth\/(nonce|verify|logout|logout-all)$/,['POST']],
@@ -22,5 +20,8 @@ export function creatorRoute(pathname,method='GET'){
  [/^\/api\/v1\/uploads\/[a-f0-9]{64}$/,['GET']],
  [/^\/api\/v1\/uploads\/[a-f0-9]{64}\/files$/,['PUT']]
  ];
+export const CREATOR_ROUTE_DEFINITIONS=Object.freeze(routes.map(([pattern,methods])=>Object.freeze({pattern:pattern.source,methods:Object.freeze([...methods])})));
+export function creatorRoute(pathname,method='GET'){
+ const path=pathname.split('?')[0].replace(/\/$/,'');
  const route=routes.find(([re])=>re.test(path));return {owned:!!route,allowed:!!route?.[1].includes(method)};
 }

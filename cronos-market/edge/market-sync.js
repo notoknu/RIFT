@@ -1,3 +1,5 @@
+import {stableD1ProjectionRead} from './projection-read-consistency.js';
+import {normalizeProjectionQuery,projectionReadHttpStatus} from '../shared/projection-read-contract.js';
 import {checkpointStatements,recoverLegacyFork,beginEdgeReceipts,stepEdgeReceipts} from './market-recovery.js';
 import {stageDenseMarket} from './dense-market.js';
 import{boundedBytes}from'../shared/creator-service.js';
@@ -10,13 +12,18 @@ export async function edgeRPC(env,method,params){
  const data=JSON.parse(new TextDecoder().decode(await boundedBytes(response,method==='eth_getTransactionReceipt'?1048576:method==='eth_getBlockByNumber'?1800000:262144)));if(data.error)throw Error('RPC rejected request');return data.result;
 }
 export async function edgeListings(db,url,{address,startBlock}={}){
- const limit=Number(url.searchParams.get('limit')||24),cursor=url.searchParams.get('cursor'),seller=url.searchParams.get('seller');
- if(!Number.isInteger(limit)||limit<1||limit>48||cursor&&!/^\d{1,78}$/.test(cursor)||seller&&!isAddress(seller))return Response.json({error:'Invalid listing query'},{status:400});
- const config=await db.prepare('SELECT * FROM edge_market_state WHERE id=1').first();if(!config||address&&config.address!==address.toLowerCase()||startBlock!=null&&config.start_block!==Number(startBlock))return Response.json({error:'Edge market not configured/indexed'},{status:503});
- const conditions=['active=1'],args=[];if(cursor){conditions.push('id<?');args.push(orderKey(cursor))}if(seller){conditions.push('seller=?');args.push(seller.toLowerCase())}
- const rows=await db.prepare('SELECT * FROM edge_market_orders WHERE '+conditions.join(' AND ')+' ORDER BY id DESC LIMIT ?').bind(...args,limit+1).all();
- const items=rows.results.slice(0,limit).map(r=>({id:BigInt(r.id).toString(),seller:r.seller,nft:r.nft,tokenId:r.token_id,priceWei:r.price_wei,price:formatEther(r.price_wei)}));
- return Response.json({items,nextCursor:rows.results.length>limit?items.at(-1).id:null,coverage:{chainId:25,address:config.address,startBlock:config.start_block,indexedThrough:config.last_block,observedHead:config.head,updatedAt:config.updated?new Date(config.updated).toISOString():null,error:config.error,scope:'RIFT events only; 12-confirmation lag; not whole-network sales'}} ,{headers:{'Cache-Control':'no-store'}});
+ const send=(value,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store'}}),detail=url.pathname.match(/^\/api\/v1\/listings\/(\d{1,78})$/);
+ if(!detail&&url.pathname!=='/api/v1/listings')return send({error:'Unknown listing route'},404);
+ if(!isAddress(address||'')||/^0x0{40}$/i.test(address)||!/^\d+$/.test(String(startBlock??''))||!Number.isSafeInteger(Number(startBlock)))return send({error:'Marketplace index not configured'},503);
+ let q;try{q=normalizeProjectionQuery('legacy-market',detail?'get':'page',detail?detail[1]:{cursor:url.searchParams.get('cursor')??undefined,seller:url.searchParams.get('seller')||undefined,nft:url.searchParams.get('nft')||undefined,limit:url.searchParams.has('limit')?Number(url.searchParams.get('limit')):24})}catch(e){return send({error:'Invalid listing query'},projectionReadHttpStatus(e))}
+ return stableD1ProjectionRead(db,{sql:'SELECT * FROM edge_market_state WHERE id=1'},async(session,s)=>{
+  if(!s||s.address!==address.toLowerCase()||s.start_block!==Number(startBlock))return send({error:'Edge market not configured/indexed'},503);
+  const coverage={chainId:25,address:s.address,startBlock:s.start_block,indexedThrough:s.last_block,blockHash:s.block_hash,observedHead:s.head,updatedAt:s.updated?new Date(s.updated).toISOString():null,lastError:s.error?'Index reports an error; inspect operator logs':null,scope:'RIFT marketplace events only; 12-confirmation lag; not live settlement authority or whole-network sales'};
+  const item=r=>({id:BigInt(r.id).toString(),seller:r.seller,nft:r.nft,tokenId:r.token_id,priceWei:r.price_wei,price:formatEther(r.price_wei)});
+  if(detail){const row=await session.prepare('SELECT * FROM edge_market_orders WHERE id=?').bind(orderKey(q)).first();return send({item:row?{...item(row),active:!!row.active}:null,coverage},row?200:404)}
+  const conditions=['active=1'],args=[];if(q.cursor!==undefined){conditions.push('id<?');args.push(orderKey(q.cursor))}if(q.seller){conditions.push('seller=?');args.push(q.seller.toLowerCase())}if(q.nft){conditions.push('nft=?');args.push(q.nft.toLowerCase())}
+  const rows=(await session.prepare('SELECT * FROM edge_market_orders WHERE '+conditions.join(' AND ')+' ORDER BY id DESC LIMIT ?').bind(...args,q.limit+1).all()).results,items=rows.slice(0,q.limit).map(item);return send({items,nextCursor:rows.length>q.limit?items.at(-1).id:null,coverage});
+ });
 }
 export async function syncEdgeMarket(env,{rpc=(method,params)=>edgeRPC(env,method,params),now=()=>Date.now()}={}){
  if(!isAddress(env.MARKETPLACE_ADDRESS)||!/^\d+$/.test(env.MARKET_START_BLOCK||''))return {disabled:true};

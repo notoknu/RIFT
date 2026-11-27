@@ -1,0 +1,17 @@
+import {restoreAgreementIndex,inspectAgreementImage} from '../server/agreement-index-recovery.js';
+import {open,constants} from 'node:fs/promises';
+import {isAbsolute,resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {restoreWalletIndex} from '../server/wallet-index-recovery.js';
+import {inspectWalletIndexImage} from '../server/wallet-index-archive.js';
+import {inspectArchiveCapacity} from '../server/archive-capacity.js';
+const need=(v,c)=>{if(!v)throw Error(c)};
+async function privateBytes(path,max){need(isAbsolute(path||''),'ABSOLUTE_PRIVATE_INPUT_REQUIRED');let f;try{f=await open(path,constants.O_RDONLY|constants.O_NOFOLLOW);const s=await f.stat();need(s.isFile()&&(s.mode&0o077)===0&&s.size>0&&s.size<=max,'PRIVATE_BOUNDED_INPUT_REQUIRED');const data=Buffer.alloc(s.size+1);const {bytesRead}=await f.read(data,0,data.length,0);need(bytesRead===s.size,'PRIVATE_INPUT_CHANGED');return data.subarray(0,s.size)}finally{await f?.close()}}
+function fields(config,allowed){need(Object.keys(config).every(k=>allowed.includes(k)),'UNKNOWN_RECOVERY_OPTION')}
+export async function runWalletRecoveryOps(config){need(config&&typeof config==='object'&&!Array.isArray(config)&&config.version===1,'RECOVERY_CONFIG_VERSION_REQUIRED');
+ if(config.action==='inspect-image'){fields(config,['version','action','source']);return {action:config.action,...await inspectWalletIndexImage(config.source),activated:false}}
+ if(config.action==='inspect-agreement'){fields(config,['version','action','source','expectedAuditHead','expectedAuditCount']);return {action:config.action,...await inspectAgreementImage(config.source,{expectedAuditHead:config.expectedAuditHead,expectedAuditCount:config.expectedAuditCount}),activated:false}}
+ if(config.action==='archive-capacity'){fields(config,['version','action','archiveDir','staleAfterMs','maxEntries','maxBytes']);const {version,action,...options}=config;return inspectArchiveCapacity(options)}
+ need(['restore-cold','restore-agreement'].includes(config.action),'UNSUPPORTED_WALLET_RECOVERY_ACTION');const audit=config.action==='restore-agreement';fields(config,['version','action','source','format','target','keyFile','keyId','expectedArchiveSha256','expectedImageSha256','expectedCheckpointDigest','confirm',...(audit?['expectedAuditHead','expectedAuditCount']:[])]);need(config.confirm===(audit?'RESTORE AGREEMENT AUDIT TO NEW COLD FILE':'RESTORE WALLET INDEX TO NEW COLD FILE'),'COLD_RESTORE_CONFIRMATION_REQUIRED');const key=await privateBytes(config.keyFile,32);try{need(key.length===32,'RECOVERY_KEY_LENGTH');const {version,action,keyFile,confirm,...options}=config;return await(audit?restoreAgreementIndex:restoreWalletIndex)({...options,key})}finally{key.fill(0)}
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){try{need(process.argv.length===3,'USAGE_WALLET_RECOVERY_OPS_PRIVATE_CONFIG_JSON');const config=JSON.parse((await privateBytes(resolve(process.argv[2]),16384)).toString('utf8'));console.log(JSON.stringify(await runWalletRecoveryOps(config),null,2))}catch(e){console.error(JSON.stringify({code:/^[A-Z0-9_]{1,100}$/.test(e.code||e.message)?(e.code||e.message):'WALLET_RECOVERY_OPERATION_FAILED',coldTargetPublished:!!e.coldTargetPublished,activated:false,note:'No live swap authorized. If coldTargetPublished is true, retain and inspect that target; do not retry with overwrite.'}));process.exitCode=1}}

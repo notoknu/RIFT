@@ -1,0 +1,79 @@
+{
+  "batch": 9,
+  "scope": "Source-only explicit matching review, acknowledged archive/prune and finite journaled worker cycle; not full platform completion",
+  "implementation": [
+    "Separately checksummed explicit review/archive audit schema; existing exchange/journal v1 unchanged",
+    "Read-only hash-bound plan, repeated observation and explicit matching acceptance with atomic audit/CAS",
+    "Bounded acknowledged export, exclusive0600 synced local archive/readback and explicit file/DB-revalidated atomic prune",
+    "Finite multi-range cycle with pending/lease gates, safe-unit renewal, shared budgets, cancellation, progress and cleanup",
+    "Local held-review-archive-next-checkpoint continuity test without replay"
+  ],
+  "verification": {
+    "engineering": 563,
+    "new_tests": 36,
+    "new_review_archive_tests": 22,
+    "new_worker_cycle_tests": 14,
+    "focused_exchange_recovery_integration": 162,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "limits": {
+    "review_records": 1024,
+    "review_document_bytes": 1048576,
+    "archive_audit_records": 256,
+    "archive_audit_bytes": 1048576,
+    "archive_selection_records": 64,
+    "archive_file_bytes": 8388608,
+    "worker_max_ranges": 8,
+    "worker_max_acquisition_timeout_ms": 45000
+  },
+  "limitations": [
+    "Approval confirmations/plan hashes are not authentication or independent review",
+    "Only exact matching held/attempting intents can be explicitly accepted; nonmatching/prepared cases stay blocked",
+    "Local archive readback/fsync is not encrypted/authenticated/off-host retention acceptance",
+    "Finite worker cycle is not a durable/fair production scheduler or deployed daemon",
+    "No independent single-provider completeness or hosted primary consistency certification"
+  ],
+  "remaining_assistant": [
+    "Durable oversized-single-block staging",
+    "Prepared/unchanged/conflicting/superseded resolution and audit rotation",
+    "Authenticated/encrypted/streaming/off-host backup retention",
+    "Durable multi-stream scheduling, supervision, jobs and alerts",
+    "Hosted acceptance automation and reviewed shared worker/API cutover",
+    "Independent acquisition policy, live Cronos compatibility, collection/wallet/stats/dependency removal/API/SDK and security/device preparation"
+  ],
+  "remaining_owner": [
+    "Physical locked-device participation when exact artifacts/instructions are ready",
+    "License/official-rights decision",
+    "Review exact consequential migration/release/signing/spend plans under unchanged limits",
+    "Specific owner-only service access/settings if automation cannot perform them; no credentials requested now"
+  ],
+  "remaining_joint_external": [
+    "Explicitly designated disposable hosted migration/consistency/limits/restore acceptance",
+    "Independent security review and reviewed activation",
+    "Actual device/native-wallet acceptance"
+  ],
+  "activation": {
+    "production_wiring": false,
+    "hosted_probes": false,
+    "hosted_db_writes": false,
+    "cloud_migration": false,
+    "deployment": false,
+    "paid_resources": false,
+    "spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "evidence": [
+    "platform-batch9-focused.log",
+    "independence-batch9-regression.log",
+    "independence-batch9-security.log"
+  ],
+  "runbook": "RECOVERY-REVIEW-RUNBOOK.md",
+  "ownership": "WORK-OWNERSHIP.md"
+}

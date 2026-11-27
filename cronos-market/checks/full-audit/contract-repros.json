@@ -1,0 +1,20 @@
+[
+  {
+    "id": "A-02",
+    "test": "Unsolicited safe transfer",
+    "observedOwner": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "market": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "listingCount": "0",
+    "recoveryFunctionPresent": false,
+    "conclusion": "NFT is accepted by escrow without a listing; no implemented recovery function."
+  },
+  {
+    "id": "A-01",
+    "test": "More than 100 listing IDs",
+    "totalListingIds": 101,
+    "firstListingActive": true,
+    "uiScansFrom": 1,
+    "uiScansTo": 100,
+    "conclusion": "Listing 0 remains active in escrow but the implemented UI listing scan cannot return it."
+  }
+]

@@ -23,8 +23,8 @@ for(const mode of ['committed','uncommitted'])test('actual SIGKILL recovery and 
   });
   assert.ok((await stat(source+'-wal')).size>0);assert.equal((await stat(source)).mode&0o777,0o600);assert.equal((await stat(source+'-wal')).mode&0o777,0o600);
   const exited=once(child,'exit');assert.equal(child.kill('SIGKILL'),true);const [code,signal]=await exited;assert.equal(code,null);assert.equal(signal,'SIGKILL');
-  store=new IndexStore(source);assert.equal(store.status(wallet).last,7);assert.equal(store.status(wallet).hash,'committed-hash');assert.deepEqual(store.candidates(wallet,'nftTokenBalance').map(row=>row.tokenId),['7']);assert.ok(integrity(source).includes('wallets'));
-  const backup=join(dir,'snapshot.sqlite'),destination=join(dir,'independent.sqlite');await snapshot(source,backup);await restore(backup,destination,{stopped:true});restored=new IndexStore(destination);assert.equal(restored.status(wallet).last,7);assert.equal(restored.status(wallet).hash,'committed-hash');assert.deepEqual(restored.candidates(wallet,'nftTokenBalance'),store.candidates(wallet,'nftTokenBalance'));
+  store=new IndexStore(source);assert.equal(store.status(wallet).last,7);assert.equal(store.status(wallet).hash,'0x'+'7'.repeat(64));assert.deepEqual(store.candidates(wallet,'nftTokenBalance').map(row=>row.tokenId),['7']);assert.ok(integrity(source).includes('wallets'));
+  const backup=join(dir,'snapshot.sqlite'),destination=join(dir,'independent.sqlite');await snapshot(source,backup);await restore(backup,destination,{stopped:true});restored=new IndexStore(destination);assert.equal(restored.status(wallet).last,7);assert.equal(restored.status(wallet).hash,'0x'+'7'.repeat(64));assert.deepEqual(restored.candidates(wallet,'nftTokenBalance'),store.candidates(wallet,'nftTokenBalance'));
   console.log('SIGKILL/WAL and fresh-path restore verified for disposable local IndexStore; not Android/hosted acceptance: '+mode);
  }finally{
   if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit');child.kill('SIGKILL');await exited.catch(()=>{});}

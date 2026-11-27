@@ -1,0 +1,11 @@
+# TEMPLATE ONLY. This retries ciphertext delivery, NEVER chain transactions or user signing.
+[Unit]
+Description=RIFT periodic pending backup delivery
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+RandomizedDelaySec=15
+Persistent=true
+Unit=rift-backup-delivery.service
+[Install]
+WantedBy=timers.target

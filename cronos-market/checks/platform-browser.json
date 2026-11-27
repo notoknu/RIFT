@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "scenarios": [
+    "mobile bottom navigation",
+    "grouped menu, Escape and focus restoration",
+    "honest unconfigured service/contract page",
+    "validated collection-scoped activity without fake global feed",
+    "360/393/768/1440 layout"
+  ],
+  "pageErrors": []
+}

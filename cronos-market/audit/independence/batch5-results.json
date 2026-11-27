@@ -1,0 +1,48 @@
+{
+  "batch": 5,
+  "scope": "Source-only explicit fresh-client uncertain-commit observation; not production recovery loop",
+  "verification": {
+    "engineering": 474,
+    "new_recovery_tests": 13,
+    "focused_store_query_sync_rpc_recovery": 73,
+    "security_real_isolated_redis": 7,
+    "simulated_contracts": 64,
+    "implementation": 6,
+    "controlled_browser": "PASS",
+    "frontend_build": "PASS",
+    "android_shell_artifact_tooling": 11
+  },
+  "implementation": [
+    "Bounded snapshot inspectRange",
+    "Single-attempt publication helper",
+    "Fresh-client exact checkpoint/event-content observation",
+    "Outcomes never authorize retry or attribute worker identity"
+  ],
+  "remaining": [
+    "Durable recovery-intent journal and lifecycle integration",
+    "Hosted primary read-after-write/partition acceptance",
+    "Log completeness, dense-block receipts, adaptive scanning",
+    "Explicit hosted migration, transaction limits, restart/independent restore acceptance",
+    "Reviewed production worker/API wiring and remaining platform/security/device/licensing gates"
+  ],
+  "activation": {
+    "production_wiring": false,
+    "hosted_probes": false,
+    "remote_writes": false,
+    "deployment": false,
+    "spend": false,
+    "new_apk": false,
+    "trading_activation": false,
+    "native_signing_approval": false
+  },
+  "limitations": [
+    "Local libSQL faults, not hosted proof",
+    "Factory must select authoritative primary; identical-client checks do not prove remote freshness",
+    "No automatic replay, persistent journal or production integration"
+  ],
+  "evidence": [
+    "platform-batch5-focused.log",
+    "independence-batch5-regression.log",
+    "independence-batch5-security.log"
+  ]
+}

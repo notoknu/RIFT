@@ -1,0 +1,11 @@
+# TEMPLATE ONLY. Actual frequency/resource policy requires owner approval.
+[Unit]
+Description=RIFT bounded maintenance opportunity
+[Timer]
+OnBootSec=180
+OnUnitInactiveSec=60
+RandomizedDelaySec=15
+Persistent=true
+Unit=rift-maintenance.service
+[Install]
+WantedBy=timers.target

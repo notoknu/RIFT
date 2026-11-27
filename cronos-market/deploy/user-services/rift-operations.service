@@ -1,0 +1,23 @@
+[Unit]
+Description=RIFT opted-in maintenance and backup delivery supervisor
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=%h/cronos-market
+ExecStart=/usr/bin/env node %h/cronos-market/scripts/operations-daemon.js run %h/.config/rift/operations.json
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=120
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/share/rift
+MemoryMax=512M
+TasksMax=64
+
+[Install]
+WantedBy=default.target

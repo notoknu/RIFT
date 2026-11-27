@@ -1,0 +1,30 @@
+import {createHash} from 'node:crypto';
+import {validateMaintenanceSpec,maintenanceJobIdentity} from './maintenance-jobs.js';
+const need=(v,c)=>{if(!v){const e=new Error(c);e.code=c;throw e}};
+const id=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(v);
+const pin=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
+export const recoveryWorkflowHash=v=>createHash('sha256').update(JSON.stringify(canonical(v))).digest('hex');
+const capabilities={
+ 'collection-rebuild':['collection-events','token-supply','collection-balances'],
+ 'marketplace-rebuild':['marketplace-events','event-order-state','gross-emitted-volume'],
+ 'wallet-rebuild':['wallet-transfer-discovery']
+};
+const completedCodes={'collection-rebuild':'REBUILD_PAIR_VERIFIED','marketplace-rebuild':'MARKETPLACE_REBUILD_PAIR_VERIFIED','wallet-rebuild':'WALLET_DISCOVERY_REBUILD_PAIR_VERIFIED'};
+/** Explicit bounded recovery DAG. Unsupported capabilities must not be silently
+ * represented by wallet discovery or marketplace event volume. */
+export function validateRecoveryWorkflow(m){
+ need(m&&Object.keys(m).sort().join(',')==='chainId,exclusions,name,nodes,requiredCapabilities,targetBlock,targetHash,version'&&m.version===1&&m.chainId===25&&id(m.name)&&Number.isSafeInteger(m.targetBlock)&&m.targetBlock>=0&&/^0x[a-f0-9]{64}$/.test(m.targetHash||'')&&Array.isArray(m.nodes)&&m.nodes.length>=1&&m.nodes.length<=64&&Array.isArray(m.requiredCapabilities)&&m.requiredCapabilities.length>=1&&m.requiredCapabilities.length<=8&&new Set(m.requiredCapabilities).size===m.requiredCapabilities.length&&Array.isArray(m.exclusions)&&m.exclusions.length>=1&&m.exclusions.length<=32&&m.exclusions.every(v=>typeof v==='string'&&v.length>=1&&v.length<=512),'INVALID_RECOVERY_WORKFLOW');
+ const byName=new Map(),byJob=new Set(),provided=new Set();
+ for(const node of m.nodes){need(node&&Object.keys(node).sort().join(',')==='capabilities,dependsOn,id,kind,spec'&&id(node.id)&&!byName.has(node.id)&&Object.hasOwn(capabilities,node.kind)&&Array.isArray(node.dependsOn)&&node.dependsOn.length<=64&&new Set(node.dependsOn).size===node.dependsOn.length&&node.dependsOn.every(id)&&Array.isArray(node.capabilities)&&node.capabilities.length>=1&&new Set(node.capabilities).size===node.capabilities.length&&node.capabilities.every(c=>capabilities[node.kind].includes(c)),'INVALID_RECOVERY_NODE');const spec=validateMaintenanceSpec(node.kind,node.spec);need(spec.targetBlock===m.targetBlock&&spec.targetHash===m.targetHash,'RECOVERY_TARGET_FORK_MISMATCH');const jobId=maintenanceJobIdentity(node.kind,spec);need(!byJob.has(jobId),'DUPLICATE_RECOVERY_JOB');byJob.add(jobId);byName.set(node.id,node);for(const c of node.capabilities)provided.add(c)}
+ need(m.requiredCapabilities.every(c=>provided.has(c)),'UNIMPLEMENTED_RECOVERY_CAPABILITY');const visiting=new Set(),visited=new Set();function visit(name){need(!visiting.has(name),'RECOVERY_DEPENDENCY_CYCLE');if(visited.has(name))return;const node=byName.get(name);need(node,'UNKNOWN_RECOVERY_DEPENDENCY');visiting.add(name);for(const dep of node.dependsOn)visit(dep);visiting.delete(name);visited.add(name)}for(const node of m.nodes)visit(node.id);return m;
+}
+export function inspectRecoveryWorkflow({manifest,jobs}={}){
+ const m=validateRecoveryWorkflow(manifest);need(jobs&&typeof jobs.inspect==='function','RECOVERY_JOBS_REQUIRED');const rows=new Map(jobs.inspect().map(r=>[r.id,r])),results=new Map();
+ for(const node of m.nodes){const jobId=maintenanceJobIdentity(node.kind,node.spec),row=rows.get(jobId);if(row){need(row.kind===node.kind&&recoveryWorkflowHash(row.spec)===recoveryWorkflowHash(node.spec),'RECOVERY_JOB_IDENTITY_CHANGED');if(row.phase==='complete')need(row.result?.code===completedCodes[node.kind]&&row.result.targetBlock===m.targetBlock&&row.result.targetHash===m.targetHash&&pin(row.result.digest)&&row.result.activated===false,'INVALID_RECOVERY_COMPLETION_RECORD')}
+  results.set(node.id,{id:node.id,jobId,kind:node.kind,phase:row?.phase??'not-enrolled',capabilities:node.capabilities,dependsOn:node.dependsOn,result:row?.result??null,version:row?.version??null});
+ }
+ const nodes=[...results.values()].map(node=>{const blockedBy=node.dependsOn.filter(dep=>results.get(dep).phase!=='complete');return {...node,blockedBy,dependencyViolation:blockedBy.length>0&&['running','complete'].includes(node.phase),runnable:blockedBy.length===0&&['ready','running'].includes(node.phase),enrollable:blockedBy.length===0&&node.phase==='not-enrolled'}});
+ const complete=nodes.every(n=>n.phase==='complete'&&!n.dependencyViolation),reviewRequired=nodes.some(n=>n.phase==='review'||n.dependencyViolation),data={format:'rift-product-recovery-workflow-status-v1',manifestHash:recoveryWorkflowHash(m),name:m.name,targetBlock:m.targetBlock,targetHash:m.targetHash,phase:reviewRequired?'review':complete?'declared-projections-complete':'in-progress',nodes,requiredCapabilities:m.requiredCapabilities,exclusions:m.exclusions,completeForDeclaredCapabilities:complete,wholeProductComplete:false,liveFilesRevalidated:false,activated:false,scope:'Durable maintenance completion records for explicitly declared cold projections only. Not live holdings, universal product parity, immutable file integrity or activation authorization.'};return {...data,statusHash:recoveryWorkflowHash(data)};
+}
+export function enrollReadyRecoveryNodes({manifest,jobs,guard=()=>{}}={}){const before=inspectRecoveryWorkflow({manifest,jobs});need(!before.nodes.some(n=>n.dependencyViolation),'RECOVERY_DEPENDENCY_VIOLATION');const enrolled=[];for(const node of manifest.nodes){guard();const status=before.nodes.find(n=>n.id===node.id);if(status.enrollable){const result=jobs.enroll(node.kind,node.spec);need(result.id===status.jobId,'RECOVERY_ENROLLMENT_IDENTITY_CHANGED');enrolled.push({id:node.id,jobId:result.id,existing:result.existing})}}guard();return {enrolled,status:inspectRecoveryWorkflow({manifest,jobs})}}

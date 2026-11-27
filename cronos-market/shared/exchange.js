@@ -27,17 +27,22 @@ export function decodeExchangeLog(log){
 }
 /** Pure event projection. No trust in a projection at settlement: always re-read chain. */
 export function reduceExchange(order,event){
- const {kind,payload:p}=event;
+ const {kind,payload:p}=event||{};if(!EXCHANGE_EVENTS.includes(kind)||!p||typeof p!=='object'||Array.isArray(p))throw Error('Invalid exchange transition');
+ const address=(a,zero=false)=>typeof a==='string'&&isAddress(a)&&(zero||!/^0x0{40}$/i.test(a));
  if(kind==='Listed'||kind==='OfferMade'){
-  if(order)throw Error('Duplicate creation');
-  return {...p,id:uint(p.id).toString(),remaining:uint(p.quantity,{positive:true}).toString()};
+  if(order)throw Error('Duplicate creation');const quantity=uint(p.quantity,{positive:true}),price=uint(p.unitPrice,{positive:true}),expiry=uint(p.expiry);uint(p.tokenId);uint(p.id);
+  if(!address(p.nft)||typeof p.multi!=='boolean'||expiry>=2n**64n)throw Error('Invalid creation fields');
+  if(kind==='Listed'){if(!address(p.seller)||!address(p.buyer,true)||p.seller.toLowerCase()===p.buyer.toLowerCase()||!p.multi&&quantity!==1n)throw Error('Invalid listing fields')}
+  else{const scope=uint(p.scope);if(!address(p.buyer)||scope>2n||expiry===0n||typeof p.root!=='string'||!/^0x[0-9a-f]{64}$/i.test(p.root)||(scope===2n?/^0x0{64}$/i.test(p.root):!/^0x0{64}$/i.test(p.root))||scope!==0n&&uint(p.tokenId)!==0n||!p.multi&&scope===0n&&quantity!==1n||price*quantity>=2n**256n)throw Error('Invalid offer fields')}
+  return {...p,id:uint(p.id).toString(),remaining:quantity.toString()};
  }
- if(!order)throw Error('Missing order creation');
+ if(!order||uint(p.id)!==uint(order.id))throw Error('Missing or mismatched order');const listing=typeof order.seller==='string',remaining=uint(order.remaining);if(remaining===0n)throw Error('Order already closed');
+ if(listing?!['Bought','ListingCancelled'].includes(kind):!['OfferFilled','OfferClosed'].includes(kind))throw Error('Wrong order transition type');
  if(kind==='Bought'||kind==='OfferFilled'){
-  const remaining=uint(order.remaining),quantity=uint(p.quantity,{positive:true});if(quantity>remaining)throw Error('Order underflow');
-  if(uint(p.gross)!==quantity*uint(order.unitPrice))throw Error('Incorrect fill value');
+  const quantity=uint(p.quantity,{positive:true});if(quantity>remaining||!order.multi&&quantity!==1n)throw Error('Invalid fill quantity/underflow');if(uint(p.gross)!==quantity*uint(order.unitPrice)||uint(p.gross)>=2n**256n)throw Error('Incorrect fill value');
+  if(kind==='Bought'){if(!address(p.buyer)||p.buyer.toLowerCase()===order.seller.toLowerCase()||!/^0x0{40}$/i.test(order.buyer)&&p.buyer.toLowerCase()!==order.buyer.toLowerCase())throw Error('Invalid listing buyer')}
+  else if(!address(p.seller)||p.seller.toLowerCase()===order.buyer.toLowerCase()||uint(order.scope)===0n&&uint(p.tokenId)!==uint(order.tokenId))throw Error('Invalid offer seller/token');
   return {...order,remaining:(remaining-quantity).toString()};
  }
- if(kind==='OfferClosed'&&uint(p.refund)!==uint(order.remaining)*uint(order.unitPrice))throw Error('Incorrect refund');
- return {...order,remaining:'0'};
+ if(kind==='OfferClosed'&&uint(p.refund)!==remaining*uint(order.unitPrice))throw Error('Incorrect refund');return {...order,remaining:'0'};
 }
